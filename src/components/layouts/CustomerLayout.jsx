@@ -86,7 +86,6 @@ export default function CustomerLayout({ children }) {
   return (
     <RoleGate roles={["CUSTOMER"]}>
       <DashboardLayout
-        brand="Clothing Delivery"
         title="My account"
         navigation={navigation}
         sidebarFooter={

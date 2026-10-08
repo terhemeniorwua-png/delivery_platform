@@ -50,7 +50,6 @@ export default function AdminLayout({ children }) {
   return (
     <RoleGate roles={["ADMIN"]}>
       <DashboardLayout
-        brand="Clothing Delivery"
         title="Admin console"
         navigation={navigation}
         headerActions={

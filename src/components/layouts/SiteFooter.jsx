@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Logo from "@/components/branding/Logo";
 
 const SHOP_LINKS = [
   { href: "/shop", label: "All products" },
@@ -42,18 +43,10 @@ export default function SiteFooter() {
     <footer className="mt-auto border-t border-border bg-surface">
       <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
         <div className="sm:col-span-2 lg:col-span-1">
-          <Link href="/" className="flex w-fit items-center gap-2 text-base font-semibold tracking-tight text-ink">
-            <span
-              aria-hidden="true"
-              className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-white"
-            >
-              C
-            </span>
-            Clothing Delivery
-          </Link>
+          <Logo href="/" size={32} />
           <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted">
-            An online clothing store with doorstep delivery — browse the
-            catalogue, place an order and a rider brings it to you.
+            SKYClothe is an online clothing store with doorstep delivery —
+            browse the catalogue, place an order and a rider brings it to you.
           </p>
         </div>
 

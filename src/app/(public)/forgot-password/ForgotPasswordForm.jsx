@@ -7,6 +7,7 @@ import { api, getApiErrorMessage } from "@/lib/api";
 import Button from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useToast } from "@/components/ui/Toast";
+import Logo from "@/components/branding/Logo";
 
 const CODE_RE = /^\d{6}$/;
 
@@ -104,6 +105,9 @@ export default function ForgotPasswordForm() {
 
   return (
     <div className="mx-auto w-full max-w-md px-4 py-14 sm:px-6 sm:py-20">
+      <div className="mb-8 flex justify-center">
+        <Logo size={46} />
+      </div>
       <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
         <h1 className="text-2xl font-semibold tracking-tight text-ink">Reset your password</h1>
         <p className="mt-1 text-sm text-muted">

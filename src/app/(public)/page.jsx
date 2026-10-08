@@ -8,6 +8,7 @@ import PromoBanner from "@/components/storefront/PromoBanner";
 import HowItWorks from "@/components/storefront/HowItWorks";
 import WhyUs from "@/components/storefront/WhyUs";
 import EmptyState from "@/components/ui/EmptyState";
+import Reveal from "@/components/ui/Reveal";
 import { buttonClassName } from "@/components/ui/Button";
 import Link from "next/link";
 import { fetchCategories, fetchProducts, primaryImage } from "@/lib/catalog";
@@ -18,7 +19,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   description:
-    "Shop clothing for men, women and kids — everyday wear, traditional outfits, shoes and accessories, delivered to your doorstep by our riders.",
+    "SKYClothe — shop clothing for men, women and kids, delivered to your doorstep by our riders.",
 };
 
 /** First product image per category slug (real API imagery for category cards). */
@@ -51,7 +52,7 @@ export default async function HomePage() {
 
       <div className="space-y-14 py-12 sm:space-y-16 sm:py-16">
         {/* ------------------------------------------------- categories */}
-        <section className="mx-auto w-full max-w-7xl px-4 sm:px-6">
+        <Reveal as="section" className="mx-auto w-full max-w-7xl px-4 sm:px-6">
           <SectionHeading
             eyebrow="Shop by category"
             title="Collections for every wardrobe"
@@ -61,12 +62,13 @@ export default async function HomePage() {
 
           {categories.length > 0 ? (
             <div className="mt-6 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
-              {categories.map((category) => (
-                <CategoryCard
-                  key={category.id}
-                  category={category}
-                  cover={covers.get(category.slug) ?? null}
-                />
+              {categories.map((category, index) => (
+                <Reveal key={category.id} delay={index * 70}>
+                  <CategoryCard
+                    category={category}
+                    cover={covers.get(category.slug) ?? null}
+                  />
+                </Reveal>
               ))}
             </div>
           ) : (
@@ -80,11 +82,11 @@ export default async function HomePage() {
               }
             />
           )}
-        </section>
+        </Reveal>
 
         {/* --------------------------------------------------- featured */}
         {products.length > 0 ? (
-          <section aria-labelledby="featured-heading" className="w-full">
+          <Reveal as="section" aria-labelledby="featured-heading" className="w-full">
             <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
               <SectionHeading
                 eyebrow="Featured"
@@ -113,9 +115,9 @@ export default async function HomePage() {
                 <ProductGridWithItems products={featured} />
               </div>
             )}
-          </section>
+          </Reveal>
         ) : (
-          <section className="mx-auto w-full max-w-7xl px-4 sm:px-6">
+          <Reveal as="section" className="mx-auto w-full max-w-7xl px-4 sm:px-6">
             <EmptyState
               title="No products available"
               description="The catalogue is being stocked — check back shortly."
@@ -125,21 +127,27 @@ export default async function HomePage() {
                 </Link>
               }
             />
-          </section>
+          </Reveal>
         )}
 
         {/* ----------------------------------------------------- promo */}
-        <PromoBanner
-          product={promoProduct}
-          href={promoProduct ? `/products/${promoProduct.slug}` : "/shop"}
-          eyebrow="New Season Collection"
-          title="Style, prepared and delivered."
-          description="Discover the latest looks in our catalogue — packed with care and dropped off at your door by our riders."
-          cta="Shop Collection"
-        />
+        <Reveal>
+          <PromoBanner
+            product={promoProduct}
+            href={promoProduct ? `/products/${promoProduct.slug}` : "/shop"}
+            eyebrow="New Season Collection"
+            title="Style, prepared and delivered."
+            description="Discover the latest looks in our catalogue — packed with care and dropped off at your door by our riders."
+            cta="Shop Collection"
+          />
+        </Reveal>
 
-        <HowItWorks />
-        <WhyUs />
+        <Reveal>
+          <HowItWorks />
+        </Reveal>
+        <Reveal>
+          <WhyUs />
+        </Reveal>
       </div>
     </>
   );

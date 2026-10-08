@@ -8,6 +8,7 @@ import { getApiErrorMessage } from "@/lib/api";
 import { safeInternalPath, homeForRole } from "@/lib/url";
 import Button from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import Logo from "@/components/branding/Logo";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -90,6 +91,9 @@ export default function RegisterForm() {
 
   return (
     <div className="mx-auto w-full max-w-lg px-4 py-14 sm:px-6 sm:py-20">
+      <div className="mb-8 flex justify-center">
+        <Logo size={46} />
+      </div>
       <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
         <h1 className="text-2xl font-semibold tracking-tight text-ink">Create your account</h1>
         <p className="mt-1 text-sm text-muted">

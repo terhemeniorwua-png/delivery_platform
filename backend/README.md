@@ -1,4 +1,4 @@
-# Clothing Delivery Platform — Backend API
+# SKYClothe — Backend API
 
 Express 5 + PostgreSQL REST API for a clothing commerce and delivery platform:
 customers browse a catalogue, manage a cart, place orders and pay; admins manage

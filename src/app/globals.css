@@ -8,16 +8,23 @@
    --------------------------------------------------------------- */
 @theme {
   /* surfaces + text */
-  --color-background: #f8fafc;
+  --color-background: #f7f9fc;
   --color-surface: #ffffff;
   --color-ink: #0f172a;
   --color-muted: #64748b;
   --color-border: #e2e8f0;
 
-  /* brand */
+  /* brand — SKYClothe: clean sky-blue core with deep navy reach */
   --color-primary: #2563eb;
   --color-primary-hover: #1d4ed8;
   --color-primary-soft: #eff6ff;
+
+  /* brand ramp (hero, logo, gradients) */
+  --color-sky-brand: #38bdf8;
+  --color-sky-deep: #0b2137;
+  --color-navy-800: #13294b;
+  --color-navy-900: #0b1a33;
+  --color-glow: #9cd4ff;
 
   /* status */
   --color-success: #059669;
@@ -151,6 +158,94 @@ body {
     black 94%,
     transparent 100%
   );
+}
+
+/* ---------------------------------------------------------------
+   Scroll-reveal system (used via the <Reveal> client component).
+   Elements start hidden ONLY when JS has run AND the user allows
+   motion; they fade/slide in as they enter the viewport.
+   --------------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-js="1"] .reveal {
+    opacity: 0;
+    transform: translateY(30px) scale(0.985);
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+  }
+
+  html[data-js="1"] .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Cookie banner + toast-bay entrance (slide up from the bottom).
+   --------------------------------------------------------------- */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Dashboard mobile drawer slides in from the left. */
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Soft scale-in for floating hero badges and dialog popovers. */
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-pop-in {
+  animation: pop-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Hero headline gradient. */
+.text-gradient-sky {
+  background: linear-gradient(100deg, #7cc4ff 0%, #38bdf8 45%, #a5e07a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Glass panel used on dark hero/glow surfaces. */
+.glass {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 /* Respect reduced-motion preferences: keep state changes, drop movement. */

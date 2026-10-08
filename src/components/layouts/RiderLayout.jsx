@@ -44,7 +44,6 @@ export default function RiderLayout({ children }) {
   return (
     <RoleGate roles={["RIDER"]}>
       <DashboardLayout
-        brand="Clothing Delivery"
         title="Rider workspace"
         navigation={navigation}
         headerActions={

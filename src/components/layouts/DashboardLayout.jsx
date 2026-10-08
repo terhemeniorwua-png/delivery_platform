@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Logo from "@/components/branding/Logo";
 
 /**
  * Shared shell for ALL role areas (customer / rider / admin): sidebar
@@ -15,7 +16,6 @@ import { usePathname } from "next/navigation";
  * navigation: [{ href, label, icon? }]
  */
 export default function DashboardLayout({
-  brand = "Clothing Delivery",
   title,
   navigation = [],
   headerActions = null,
@@ -54,14 +54,8 @@ export default function DashboardLayout({
 
   const sidebarInner = (
     <>
-      <div className="flex h-16 items-center gap-2 border-b border-border px-5">
-        <span
-          aria-hidden="true"
-          className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-white"
-        >
-          C
-        </span>
-        <span className="truncate text-sm font-semibold text-ink">{brand}</span>
+      <div className="flex h-16 items-center border-b border-border px-5">
+        <Logo href="/" size={30} textClassName="text-base" />
       </div>
       <div className="flex-1 overflow-y-auto p-4">{navList}</div>
       {sidebarFooter ? (
@@ -81,11 +75,11 @@ export default function DashboardLayout({
       {sidebarOpen ? (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
-            className="absolute inset-0 bg-ink/40"
+            className="animate-fade-in absolute inset-0 bg-ink/40"
             onClick={() => setSidebarOpen(false)}
             aria-hidden="true"
           />
-          <aside className="absolute inset-y-0 left-0 flex w-72 flex-col bg-surface shadow-xl">
+          <aside className="animate-slide-in-left absolute inset-y-0 left-0 flex w-72 flex-col bg-surface shadow-xl">
             {sidebarInner}
           </aside>
         </div>

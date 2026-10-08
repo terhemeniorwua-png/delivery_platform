@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { ToastProvider } from "@/components/ui/Toast";
+import CookieConsent from "@/components/ui/CookieConsent";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,8 +16,8 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: {
-    default: "Clothing Delivery Platform — Fashion delivered to your doorstep",
-    template: "%s | Clothing Delivery Platform",
+    default: "SKYClothe — Fashion delivered to your doorstep",
+    template: "%s | SKYClothe",
   },
   description:
     "Shop clothing for men, women and kids — everyday wear, traditional outfits, shoes and accessories, delivered to your doorstep by our riders.",
@@ -35,7 +36,10 @@ export default function RootLayout({ children }) {
     >
       <body className="min-h-full flex flex-col">
         <AuthProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            {children}
+            <CookieConsent />
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>

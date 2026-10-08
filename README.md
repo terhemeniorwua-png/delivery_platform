@@ -1,4 +1,4 @@
-# Clothing Delivery Platform
+# SKYClothe — Delivery Platform
 
 Full-stack platform for browsing clothing, placing orders and getting them
 delivered. Customers shop and follow deliveries, riders manage drop-offs, and
@@ -8,7 +8,7 @@ administrators run the catalogue, orders and deliveries.
 deliveryPlatform/
 ├── src/            Next.js frontend (this repo root)
 │   ├── app/          App Router pages + route groups: (public), later (customer), (rider), (admin)
-│   ├── components/   ui/ (design system), layouts/ (shells), storefront/ (catalogue UI), auth/ (route protection)
+│   ├── components/   ui/ (design system), layouts/ (shells), storefront/ (catalogue UI), branding/ (SKYClothe logo), auth/ (route protection)
 │   ├── context/      AuthContext — current user + role
 │   └── lib/          api.js (API client), catalog.js (storefront fetchers), format.js (currency), url.js (query helpers)
 ├── backend/        Express 5 REST API (see backend/README.md for the full endpoint reference)

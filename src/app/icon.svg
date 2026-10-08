@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <defs>
+    <linearGradient id="skygrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stopColor="#38bdf8" />
+      <stop offset="55%" stopColor="#2563eb" />
+      <stop offset="100%" stopColor="#1e3a8a" />
+    </linearGradient>
+  </defs>
+  <rect width="48" height="48" rx="12" fill="url(#skygrad)" />
+  <circle cx="24" cy="10.6" r="2.4" fill="#ffffff" />
+  <path d="M24 13v10M15 23h18M17.75 23 24 36l6.25-13" stroke="#ffffff" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
+  <circle cx="19.5" cy="39.5" r="1.4" fill="#ffffff" opacity="0.45" />
+  <circle cx="24" cy="41" r="1.7" fill="#ffffff" opacity="0.7" />
+  <circle cx="28.5" cy="39" r="2.3" fill="#fbbf24" />
+</svg>

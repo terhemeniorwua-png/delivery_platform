@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Logo from "@/components/branding/Logo";
 
 /**
  * Public site header: wordmark, pluggable navigation and action slots.
@@ -24,19 +24,12 @@ export default function SiteHeader({ nav = null, actions = null, trailing = null
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-surface/90 backdrop-blur">
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link
+        <Logo
           href="/"
-          className="flex items-center gap-2 rounded-lg text-base font-semibold tracking-tight text-ink"
-        >
-          <span
-            aria-hidden="true"
-            className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-white"
-          >
-            C
-          </span>
-          <span className="hidden sm:inline">Clothing Delivery</span>
-          <span className="sm:hidden">Clothing</span>
-        </Link>
+          size={30}
+          className="rounded-lg transition-opacity hover:opacity-90"
+          textClassName="hidden sm:inline"
+        />
 
         <div className="hidden items-center gap-1 md:flex">{nav}</div>
 
