@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api, getApiErrorMessage } from "@/lib/api";
 import Badge from "@/components/ui/Badge";
@@ -17,27 +17,35 @@ export default function OrdersView({ current = {} }) {
   const page = Number(current.page) > 0 ? Number(current.page) : 1;
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  const load = useCallback(
-    () =>
-      api
-        .get("/orders", { query: { page, limit: PAGE_SIZE } })
-        .then((result) => {
-          setData(result);
-          setError(null);
-        })
-        .catch((err) => setError(err))
-        .finally(() => setLoading(false)),
-    [page]
-  );
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    setLoading(true);
-    load();
-  }, [load]);
+    let cancelled = false;
+    api
+      .get("/orders", { query: { page, limit: PAGE_SIZE } })
+      .then((result) => {
+        if (cancelled) return;
+        setData({ ...result, forPage: page });
+        setError(null);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [page, attempt]);
 
-  if (loading && !data) {
+  function retry() {
+    setError(null);
+    setAttempt((value) => value + 1);
+  }
+
+  // Skeleton while the first page loads, and while a new page is in flight.
+  const loading = (!data || data.forPage !== page) && !error;
+
+  if (loading) {
     return (
       <div className="space-y-3" aria-hidden="true">
         {[0, 1, 2, 3].map((index) => (
@@ -51,16 +59,7 @@ export default function OrdersView({ current = {} }) {
   }
 
   if (error) {
-    return (
-      <ErrorState
-        title="Unable to load your orders"
-        message={getApiErrorMessage(error)}
-        onRetry={() => {
-          setLoading(true);
-          load();
-        }}
-      />
-    );
+    return <ErrorState title="Unable to load your orders" message={getApiErrorMessage(error)} onRetry={retry} />;
   }
 
   const orders = data?.orders ?? [];

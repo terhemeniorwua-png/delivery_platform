@@ -9,8 +9,8 @@ router.use(authenticate);
 
 router.get('/', controller.get);
 router.post('/items', validate({ body: addItemSchema }), controller.addItem);
-router.patch('/items/:itemId', validate({ params: idParam, body: updateItemSchema }), controller.updateItem);
-router.delete('/items/:itemId', validate({ params: idParam }), controller.removeItem);
+router.patch('/items/:id', validate({ params: idParam, body: updateItemSchema }), controller.updateItem);
+router.delete('/items/:id', validate({ params: idParam }), controller.removeItem);
 router.delete('/', controller.clear);
 
 module.exports = router;

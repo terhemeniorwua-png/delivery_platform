@@ -12,12 +12,12 @@ async function addItem(req, res) {
 }
 
 async function updateItem(req, res) {
-  const cart = await cartService.updateItem(req.user.id, req.params.itemId, req.body.quantity);
+  const cart = await cartService.updateItem(req.user.id, req.params.id, req.body.quantity);
   return success(res, 'Cart updated', { cart });
 }
 
 async function removeItem(req, res) {
-  const cart = await cartService.removeItem(req.user.id, req.params.itemId);
+  const cart = await cartService.removeItem(req.user.id, req.params.id);
   return success(res, 'Item removed from cart', { cart });
 }
 

@@ -30,10 +30,7 @@ export default function SuccessView({ orderId }) {
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(() => {
-    if (!orderId) {
-      setLoading(false);
-      return;
-    }
+    if (!orderId) return;
     api
       .get(`/orders/${orderId}`)
       .then((data) => {
@@ -54,7 +51,9 @@ export default function SuccessView({ orderId }) {
     router.replace("/login?next=%2Fcheckout%2Fsuccess");
   }, [authLoading, isAuthenticated, router]);
 
-  if (authLoading || !isAuthenticated || loading) {
+  // No ?order= param → straight to the error state (never resolves to a
+  // permanent skeleton).
+  if (authLoading || !isAuthenticated || (loading && orderId)) {
     return (
       <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6">
         <ProductCardSkeletons count={2} />

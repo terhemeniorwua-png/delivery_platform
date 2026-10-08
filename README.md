@@ -106,7 +106,7 @@ Hard rules enforced by the backend (frontend only reflects them):
 | Area     | Route group      | Layout                        | Access                        |
 | -------- | ---------------- | ----------------------------- | ----------------------------- |
 | Public   | `app/(public)`   | `PublicLayout` (header/footer)| everyone                      |
-| Customer | `app/(customer)` | `CustomerLayout` (later phase)| `RoleGate` → CUSTOMER         |
+| Customer | `app/(customer)` | `CustomerLayout` (nav + role gate)| `RoleGate` → CUSTOMER         |
 | Rider    | `app/(rider)`    | `RiderLayout` (later phase)   | `RoleGate` → RIDER            |
 | Admin    | `app/(admin)`    | `AdminLayout` (later phase)   | `RoleGate` → ADMIN            |
 
@@ -120,10 +120,10 @@ navigation is passed in, never duplicated.
 | `/`                    | hero collage, category covers, featured products (`GET /categories`, `GET /products`), promo, how-it-works |
 | `/shop`                | search (`q`), category filter, min/max price, sort (newest/price_asc/price_desc/name), pagination — all via `GET /products` |
 | `/categories`          | `GET /categories` (real `productCount`, cover image derived from each category's first product) |
-| `/categories/[slug]`   | `GET /categories/:slug` + products, sort + pagination |
+| `/categories/[slug]`   | `GET /categories/:slug` + products, search (`q`), min/max price, sort + pagination |
 | `/products/[id]`       | `GET /products/:idOrSlug` — gallery, size/colour variant picker with per-combo stock, discount badge, real `POST /cart/items` add-to-cart (signed-in only), related products |
 | `/about`, `/contact`   | static copy; contact form composes a mailto (no backend contact endpoint yet) |
-| `/cart`                | `GET /cart` — read-only (qty edit/checkout arrive with later phases) |
+| `/cart`                | interactive — qty stepper (`PATCH /cart/items/:id`), remove, stock/inactive warnings, disabled checkout while blocked items exist |
 | `/privacy`, `/terms`   | static |
 
 - Money is formatted by one central constant (`src/lib/format.js` — NGN/`₦`);
@@ -131,12 +131,36 @@ navigation is passed in, never duplicated.
 - Header/nav is auth-aware (guest → Sign in/Register; customer → Orders;
   rider/admin → their area) and the cart badge tracks the real `GET /cart`
   count via the `cart:updated` event.
-- **Reserved links**: `/login`, `/register`, `/customer`, `/customer/orders`,
-  `/rider`, `/admin` are linked from the header but intentionally 404 until
-  their phases ship.
+- **Mobile filtering**: on `lg` and below the shop/category filter block is
+  replaced by a `[Filters]` button that opens the same `ShopFilters` in a
+  sheet (`MobileFilters` + `Modal`).
 - **Not faked, not available yet**: contact submission endpoint, popularity
   sort, category cover images (derived client-side from product images),
   wishlist, rider application flow.
+
+## Auth, cart & checkout (Phases 5–6)
+
+| Route                        | Data / behaviour |
+| ---------------------------- | ---------------- |
+| `/login`, `/register`        | `POST /auth/login`, `POST /auth/register` (server shells + client forms; `?next=` returns you to the page you came from, validated against open redirects and never pointing back at an auth screen) |
+| `/customer`                  | dashboard (`GET /orders {limit:5}`) — greeting, totals, recent orders; `/customer/dashboard` redirects here |
+| `/customer/orders`           | paginated own-order list (`GET /orders`) |
+| `/customer/orders/[id]`      | order detail (`GET /orders/:id`) — items, totals, address, payments; two-step cancel button (`POST /orders/:id/cancel`) while PENDING/CONFIRMED |
+| `/checkout`                  | address picker (`GET /addresses`) + add-address modal (`POST /addresses`), payment method (CASH/CARD/TRANSFER), sticky summary. `POST /orders {addressId}` → `POST /payments {method}` → redirect to the success screen; payment failure is reported honestly instead of hidden |
+| `/checkout/success`          | confirmation screen (`GET /orders/:id`) — order number, status, totals, payment state |
+
+Notes:
+
+- Order creation is **server-priced**: the backend recomputes every line from
+  the database, validates stock under row locks, applies `DELIVERY_FEE` (env,
+  default ₦1,500) and clears the cart. The frontend only previews that same
+  default constant (`DELIVERY_FEE` in `src/lib/format.js`) — the API response
+  is authoritative.
+- The order `note` field is accepted by the API but ignored by the service,
+  so no note UI is built.
+- Backend fix shipped with this phase: cart routes registered `/:itemId`
+  while validating `{id}`, making `PATCH`/`DELETE /api/cart/items/:id`
+  always 400 — the param is now `:id` end-to-end.
 
 ## Backend API (summary)
 
@@ -165,8 +189,12 @@ The full endpoint table, request/response shapes and business rules live in
 
 ## Frontend status
 
-Phase 1 (foundation) and Phase 2 (public website & storefront) are in place:
+Phase 1 (foundation), Phase 2 (public website & storefront), Phase 5
+(product catalog & shopping) and Phase 6 (cart & checkout) are in place:
 design tokens + reusable UI components, layout shells, central API client,
-auth context, role-based route protection, and the full public catalogue
-experience described under **Public storefront (Phase 2)**. Dashboards,
-checkout, the rider application UI and account pages arrive in later phases.
+auth context, role-based route protection, the full public catalogue
+experience, interactive cart, address/payment checkout with order
+confirmation, and the customer account area (dashboard, order list, order
+detail with cancel). The hero on `/` is a full-bleed background image under
+a warm-sand overlay. Rider/admin dashboards and the rider application UI
+arrive in later phases.
