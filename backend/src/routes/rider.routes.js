@@ -20,6 +20,7 @@ router.patch(
   validate({ body: availabilitySchema }),
   controller.updateAvailability
 );
+router.get('/me/dashboard', authorize('RIDER'), controller.dashboard);
 
 // Admin management
 router.get('/', authorize('ADMIN'), controller.list);

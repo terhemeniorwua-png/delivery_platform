@@ -63,6 +63,14 @@ async function myApplication(userId) {
 async function listApplications(query) {
   const where = {};
   if (query.status) where.status = query.status;
+  if (query.search) {
+    const term = `%${query.search.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+    where[Op.or] = [
+      { fullName: { [Op.iLike]: term } },
+      { phone: { [Op.iLike]: term } },
+      { vehicleNumber: { [Op.iLike]: term } },
+    ];
+  }
 
   const { count, rows } = await RiderApplication.findAndCountAll({
     where,
@@ -83,6 +91,14 @@ async function listApplications(query) {
       totalPages: Math.max(1, Math.ceil(count / query.limit)),
     },
   };
+}
+
+async function getApplication(applicationId) {
+  const application = await RiderApplication.findByPk(applicationId, {
+    include: APPLICATION_WITH_USER,
+  });
+  if (!application) throw notFound('Rider application not found');
+  return application;
 }
 
 async function approveApplication(applicationId, admin) {
@@ -158,6 +174,7 @@ module.exports = {
   createApplication,
   myApplication,
   listApplications,
+  getApplication,
   approveApplication,
   rejectApplication,
 };

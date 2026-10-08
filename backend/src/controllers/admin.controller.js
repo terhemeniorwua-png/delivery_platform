@@ -86,4 +86,9 @@ async function administrators(req, res) {
   return success(res, 'Administrators fetched', { ...stats, users: users.map((u) => u.toPublicJSON()) });
 }
 
-module.exports = { list, updateStatus, createAdministrator, updateRole, administrators };
+async function dashboard(req, res) {
+  const data = await adminService.getDashboard();
+  return success(res, 'Dashboard fetched', data);
+}
+
+module.exports = { list, updateStatus, createAdministrator, updateRole, administrators, dashboard };

@@ -8,6 +8,9 @@ const { idParam, userStatusSchema } = require('../validators/auth.validator');
 
 router.use(authenticate, authorize('ADMIN'));
 
+// Phase 11 — aggregate dashboard (counts + recent activity), all server-side.
+router.get('/dashboard', controller.dashboard);
+
 router.get('/users', validate({ query: userListQuery }), controller.list);
 router.patch(
   '/users/:id/status',

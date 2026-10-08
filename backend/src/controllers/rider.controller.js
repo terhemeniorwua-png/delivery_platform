@@ -7,7 +7,7 @@ async function list(req, res) {
 }
 
 async function get(req, res) {
-  const rider = await riderService.getRiderById(req.params.id);
+  const rider = await riderService.getRiderDetail(req.params.id);
   return success(res, 'Rider fetched', { rider });
 }
 
@@ -32,4 +32,9 @@ async function updateAvailability(req, res) {
   return success(res, 'Availability updated', { rider });
 }
 
-module.exports = { list, get, create, update, me, updateAvailability };
+async function dashboard(req, res) {
+  const data = await riderService.riderDashboard(req.user.id);
+  return success(res, 'Rider dashboard fetched', data);
+}
+
+module.exports = { list, get, create, update, me, updateAvailability, dashboard };

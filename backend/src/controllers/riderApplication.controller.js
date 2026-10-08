@@ -34,6 +34,15 @@ async function list(req, res, next) {
   }
 }
 
+async function get(req, res, next) {
+  try {
+    const application = await riderApplicationService.getApplication(req.params.id);
+    return success(res, 'OK', { application });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 async function approve(req, res, next) {
   try {
     const application = await riderApplicationService.approveApplication(
@@ -65,4 +74,4 @@ async function reject(req, res, next) {
   }
 }
 
-module.exports = { create, me, list, approve, reject };
+module.exports = { create, me, list, get, approve, reject };

@@ -1,9 +1,21 @@
 const bcrypt = require('bcrypt');
-const { User, Cart, Rider, sequelize } = require('../models');
+const { Op } = require('sequelize');
+const {
+  User,
+  Cart,
+  Rider,
+  RiderApplication,
+  Order,
+  Payment,
+  Delivery,
+  Product,
+  sequelize,
+} = require('../models');
 const { conflict, badRequest, notFound } = require('../utils/errors');
 const { MAX_ADMINS, ADMIN_LIMIT_MESSAGE, LAST_ADMIN_MESSAGE } = require('../constants/status');
 
 const SALT_ROUNDS = 10;
+const ACTIVE_DELIVERY_STATUSES = ['PENDING', 'ASSIGNED', 'PICKED_UP', 'IN_TRANSIT'];
 
 // Same key the enforce_max_admins() database trigger locks on, so application
 // checks and the trigger share one critical section.
@@ -121,9 +133,103 @@ async function changeUserRole(userId, role) {
   });
 }
 
+// Phase 11 — single aggregate query set so the dashboard never pulls thousands
+// of rows into the app just to show a handful of numbers.
+async function getDashboard() {
+  const [
+    totalCustomers,
+    totalRiders,
+    totalAdmins,
+    pendingApplications,
+    totalProducts,
+    totalOrders,
+    pendingOrders,
+    activeDeliveries,
+    completedDeliveries,
+    revenue,
+  ] = await Promise.all([
+    User.count({ where: { role: 'CUSTOMER' } }),
+    User.count({ where: { role: 'RIDER' } }),
+    User.count({ where: { role: 'ADMIN' } }),
+    RiderApplication.count({ where: { status: 'PENDING' } }),
+    Product.count(),
+    Order.count(),
+    Order.count({ where: { status: 'PENDING' } }),
+    Delivery.count({ where: { status: { [Op.in]: ACTIVE_DELIVERY_STATUSES } } }),
+    Delivery.count({ where: { status: 'DELIVERED' } }),
+    Payment.sum('amount', { where: { status: 'SUCCESSFUL' } }),
+  ]);
+
+  const [recentOrders, recentApplications, activeDeliveryRows] = await Promise.all([
+    Order.findAll({
+      limit: 5,
+      order: [['createdAt', 'DESC']],
+      include: [
+        { model: User, as: 'customer', attributes: ['id', 'firstName', 'lastName'] },
+        { model: Payment, as: 'payments', attributes: ['id', 'status', 'method', 'amount'] },
+      ],
+    }),
+    RiderApplication.findAll({
+      limit: 5,
+      order: [['createdAt', 'DESC']],
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'firstName', 'lastName', 'email', 'phone'],
+        },
+      ],
+    }),
+    Delivery.findAll({
+      where: { status: { [Op.in]: ACTIVE_DELIVERY_STATUSES } },
+      limit: 5,
+      order: [['updatedAt', 'DESC']],
+      include: [
+        {
+          model: Order,
+          as: 'order',
+          attributes: ['id', 'orderNumber'],
+          include: [{ model: User, as: 'customer', attributes: ['id', 'firstName', 'lastName'] }],
+        },
+        {
+          model: Rider,
+          as: 'rider',
+          attributes: ['id', 'vehicleType', 'vehicleNumber'],
+          include: [{ model: User, as: 'user', attributes: ['id', 'firstName', 'lastName'] }],
+        },
+      ],
+    }),
+  ]);
+
+  return {
+    stats: {
+      totalCustomers,
+      totalRiders,
+      totalAdmins,
+      pendingApplications,
+      totalProducts,
+      totalOrders,
+      pendingOrders,
+      activeDeliveries,
+      completedDeliveries,
+      totalRevenue: Number(revenue) || 0,
+    },
+    administrators: {
+      count: totalAdmins,
+      limit: MAX_ADMINS,
+      remaining: Math.max(0, MAX_ADMINS - totalAdmins),
+      atLimit: totalAdmins >= MAX_ADMINS,
+    },
+    recentOrders,
+    recentApplications,
+    activeDeliveries: activeDeliveryRows,
+  };
+}
+
 module.exports = {
   countAdministrators,
   administratorStats,
   createAdministrator,
   changeUserRole,
+  getDashboard,
 };

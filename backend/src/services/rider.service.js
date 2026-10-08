@@ -1,8 +1,38 @@
 const bcrypt = require('bcrypt');
 const { Op } = require('sequelize');
 const sequelize = require('../config/database');
-const { User, Rider, Delivery } = require('../models');
+const { User, Rider, Delivery, Order } = require('../models');
 const { notFound, conflict, badRequest } = require('../utils/errors');
+
+const ACTIVE_RIDER_DELIVERY_STATUSES = ['ASSIGNED', 'PICKED_UP', 'IN_TRANSIT'];
+
+// One grouped query for every rider's delivery tally — used by the admin rider
+// list/detail so statistics never require loading every delivery row.
+async function deliveryStatsByRider(ids) {
+  const map = {};
+  for (const id of ids) {
+    map[id] = { active: 0, delivered: 0, cancelled: 0, total: 0 };
+  }
+  if (ids.length === 0) return map;
+
+  const rows = await Delivery.findAll({
+    where: { riderId: { [Op.in]: ids } },
+    attributes: ['riderId', 'status', [sequelize.fn('COUNT', sequelize.col('id')), 'count']],
+    group: ['riderId', 'status'],
+    raw: true,
+  });
+
+  for (const row of rows) {
+    const entry = map[row.riderId];
+    if (!entry) continue;
+    const count = Number(row.count);
+    entry.total += count;
+    if (ACTIVE_RIDER_DELIVERY_STATUSES.includes(row.status)) entry.active += count;
+    else if (row.status === 'DELIVERED') entry.delivered += count;
+    else if (row.status === 'CANCELLED') entry.cancelled += count;
+  }
+  return map;
+}
 
 async function createRider(input) {
   const email = String(input.email).toLowerCase();
@@ -43,17 +73,18 @@ async function listRiders() {
     order: [['id', 'ASC']],
   });
 
-  const counts = await Delivery.count({
-    where: { status: { [Op.in]: ['ASSIGNED', 'PICKED_UP', 'IN_TRANSIT'] } },
-    group: ['riderId'],
-  });
-  const activeByRider = {};
-  for (const row of counts) activeByRider[row.riderId] = Number(row.count);
+  const stats = await deliveryStatsByRider(riders.map((rider) => rider.id));
 
-  return riders.map((rider) => ({
-    ...rider.toJSON(),
-    activeDeliveries: activeByRider[rider.id] || 0,
-  }));
+  return riders.map((rider) => {
+    const counts = stats[rider.id] || { active: 0, delivered: 0, cancelled: 0, total: 0 };
+    return {
+      ...rider.toJSON(),
+      activeDeliveries: counts.active,
+      completedDeliveries: counts.delivered,
+      cancelledDeliveries: counts.cancelled,
+      totalDeliveries: counts.total,
+    };
+  });
 }
 
 async function getRiderByUserId(userId) {
@@ -113,11 +144,44 @@ async function releaseRiderIfIdle(riderId, transaction) {
   }
 }
 
+// Phase 12 — admin rider detail with delivery statistics.
+async function getRiderDetail(riderId) {
+  const rider = await getRiderById(riderId);
+  const stats = await deliveryStatsByRider([rider.id]);
+  return {
+    ...rider.toJSON(),
+    deliveryStats: stats[rider.id] || { active: 0, delivered: 0, cancelled: 0, total: 0 },
+  };
+}
+
+// Phase 9 — rider self-service dashboard aggregate (own profile + stats + the
+// single active delivery, if any). Scoped to the authenticated rider only.
+async function riderDashboard(userId) {
+  const rider = await getRiderByUserId(userId);
+  const stats = await deliveryStatsByRider([rider.id]);
+  const activeDelivery = await Delivery.findOne({
+    where: {
+      riderId: rider.id,
+      status: { [Op.in]: ['ASSIGNED', 'PICKED_UP', 'IN_TRANSIT'] },
+    },
+    order: [['createdAt', 'DESC']],
+    include: [{ model: Order, as: 'order', attributes: ['id', 'orderNumber', 'status', 'totalAmount'] }],
+  });
+
+  return {
+    rider: rider.toJSON(),
+    stats: stats[rider.id] || { active: 0, delivered: 0, cancelled: 0, total: 0 },
+    activeDelivery,
+  };
+}
+
 module.exports = {
   createRider,
   listRiders,
   getRiderByUserId,
   getRiderById,
+  getRiderDetail,
+  riderDashboard,
   updateRider,
   updateAvailability,
   markRiderBusy,

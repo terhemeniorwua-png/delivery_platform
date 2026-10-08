@@ -26,6 +26,12 @@ router.post(
 
 router.get('/me', authorize('CUSTOMER', 'RIDER'), riderApplicationController.me);
 router.get('/', authorize('ADMIN'), validate({ query: applicationListQuery }), riderApplicationController.list);
+router.get(
+  '/:id',
+  authorize('ADMIN'),
+  validate({ params: idParam }),
+  riderApplicationController.get
+);
 router.patch(
   '/:id/approve',
   authorize('ADMIN'),
