@@ -95,6 +95,15 @@ export default function LoginForm() {
             placeholder="Your password"
           />
 
+          <div className="flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="text-sm font-medium text-primary transition-colors hover:text-primary-hover"
+            >
+              Forgot password?
+            </Link>
+          </div>
+
           <Button type="submit" size="lg" fullWidth loading={submitting}>
             Sign in
           </Button>
