@@ -1,5 +1,6 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '..', '.env') });
 
+require('../src/config/network');
 const { buildSslConfig } = require('../src/config/ssl');
 
 const base = {
