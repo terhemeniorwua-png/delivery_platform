@@ -107,8 +107,8 @@ Hard rules enforced by the backend (frontend only reflects them):
 | -------- | ---------------- | ----------------------------- | ----------------------------- |
 | Public   | `app/(public)`   | `PublicLayout` (header/footer)| everyone                      |
 | Customer | `app/(customer)` | `CustomerLayout` (nav + role gate)| `RoleGate` → CUSTOMER         |
-| Rider    | `app/(rider)`    | `RiderLayout` (later phase)   | `RoleGate` → RIDER            |
-| Admin    | `app/(admin)`    | `AdminLayout` (later phase)   | `RoleGate` → ADMIN            |
+| Rider    | `app/(rider)`    | `RiderLayout` (nav + role gate)| `RoleGate` → RIDER            |
+| Admin    | `app/(admin)`    | `AdminLayout` (nav + role gate)| `RoleGate` → ADMIN            |
 
 All dashboards share one `DashboardLayout` (sidebar + topbar, responsive) —
 navigation is passed in, never duplicated.
@@ -202,8 +202,8 @@ customer → rider application workflow.
   ("Become a rider" ↔ "Rider application"), with Profile, Cart and Logout.
 - Document uploads are **not** implemented — the backend has no storage
   layer yet (only if/when the backend supports it).
-- `/rider` is a minimal landing placeholder so newly-approved riders are not
-  dead-ended; the full rider dashboard remains a later phase.
+- `/rider` is the full rider dashboard (see the Phase 9–10 section below);
+  newly-approved riders land on their active-delivery dashboard.
 
 ## Backend API (summary)
 
@@ -223,15 +223,67 @@ The full endpoint table, request/response shapes and business rules live in
 | Riders         | `/api/riders*`                | rider self-service + admin management |
 | Rider apps     | `/api/rider-applications*`    | customer apply; admin approve/reject (CUSTOMER → RIDER) |
 | Deliveries     | `/api/deliveries*`            | scoped lists, assign, status transitions |
-| Admin          | `/api/admin/*`                | users, roles, administrators (max 5) |
+| Admin          | `/api/admin/*`                | users, roles, administrators (max 5), aggregate dashboard |
 
 ## Frontend status
 
-Phases 1, 2, 5, 6, 7 and 8 are in place: design tokens + reusable UI
+Phases 1, 2, 5, 6, 7, 8, 9, 10, 11 and 12 are in place: design tokens + reusable UI
 components, layout shells, central API client, auth context, role-based route
 protection, the full public catalogue experience, interactive cart,
 address/payment checkout with order confirmation, the customer account area
 (dashboard, filterable order list, order detail with timeline and cancel),
-profile management, and the rider-application flow. The hero on `/` is a
-full-bleed image slideshow under a warm-sand overlay. Rider/admin dashboards
-arrive in later phases.
+profile management, the rider-application flow, the rider dashboard
+(availability control, delivery list + detail with state transitions), and the
+admin console (dashboard, riders, user management, rider-application
+approval/rejection, administrator capacity). The hero on `/` is a full-bleed
+image slideshow under a warm-sand overlay.
+
+## Rider & delivery management (Phases 9–10)
+
+The `/rider` area is now the real rider dashboard (the old placeholder was
+removed):
+
+- Dashboard (`/rider`): greeting + availability badge, `AvailabilityControl`
+  (Go available / Go offline via `PATCH /riders/me/availability`; read-only
+  while `BUSY`), per-rider stats (active / completed / cancelled / total),
+  the current active delivery with its next action, and the recent delivery
+  list. Riders see only their own deliveries (server-side scoped).
+- Deliveries (`/rider/deliveries`): filterable by status with pagination
+  preserved in the URL; detail (`/rider/deliveries/[id]`) shows the order,
+  a progress timeline derived from the delivery state machine, item snapshots
+  with totals, and the full `delivery_events` audit trail (`EventTimeline`).
+  The next available action (`ASSIGNED → PICKED_UP → IN_TRANSIT → DELIVERED`)
+  is confirmed through a `Modal` before `PATCH /deliveries/:id/status`.
+  CANCELLED is admin-only — riders see a contact-support notice.
+- Availability (`/rider/availability`): status + legend explaining the
+  `AVAILABLE / BUSY / OFFLINE` workflow.
+- Profile (`/rider/profile`): read-only account + vehicle details; editing
+  routes through an admin.
+
+## Admin console (Phases 11–12)
+
+The `/admin` area (`RoleGate → ADMIN`) contains:
+
+- Dashboard (`/admin`): key statistics, administrator capacity (`x / 5` with
+  a progress bar and slots message), recent orders, recent rider applications
+  (pending ones highlighted) and active deliveries — all aggregated by the
+  backend (`GET /admin/dashboard`).
+- Users (`/admin/users`): search + status/role filters, status changes
+  (`PATCH /admin/users/:id/status`) and role promotions via shared `Modal`s.
+  "Make admin" is disabled at the 5-administrator cap; the last admin and
+  your own account can't be demoted. Current capacity is shown inline.
+- Riders (`/admin/riders`): list with per-rider delivery counts and
+  availability; detail adds delivery statistics and an account-status control
+  that rides on `PATCH /admin/users/:id/status`.
+- Rider applications (`/admin/rider-applications`): status filter + search +
+  pagination; detail (`.../[id]`) supports approve (confirm `Modal`) and
+  reject with a **required** reason. `409` conflicts (e.g. already reviewed)
+  surface as toasts and refresh the page.
+- Administrators (`/admin/administrators`): capacity panel (`count/limit`),
+  create-form **disabled at the 5-admin cap**, and demotion (`ADMIN →
+  CUSTOMER`) — the only legitimate admin-management path.
+
+Auth additions: admin creation exists only behind the console (login-only
+registration — the public register endpoint is hardcoded to `CUSTOMER`), and
+`/forgot-password` provides the UI-only "forgot password" flow (no reset
+mailer/endpoint yet, so it stops at a confirmation message).
