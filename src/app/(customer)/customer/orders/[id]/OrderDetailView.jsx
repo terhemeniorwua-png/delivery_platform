@@ -1,0 +1,246 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { api, getApiErrorMessage } from "@/lib/api";
+import { useToast } from "@/components/ui/Toast";
+import Button, { buttonClassName } from "@/components/ui/Button";
+import Badge from "@/components/ui/Badge";
+import { ErrorState } from "@/components/ui/EmptyState";
+import { ProductCardSkeletons } from "@/components/storefront/ProductGrid";
+import { formatPrice } from "@/lib/format";
+import {
+  orderStatusLabel,
+  orderStatusTone,
+  paymentStatusLabel,
+  formatDateTime,
+} from "@/lib/orders";
+
+const CANCELABLE = ["PENDING", "CONFIRMED"];
+
+/**
+ * Single order (GET /api/orders/:id — backend rejects other customers'
+ * IDs with 404). Optional cancel via POST /api/orders/:id/cancel while the
+ * order is still cancellable.
+ */
+export default function OrderDetailView({ orderId }) {
+  const { toast } = useToast();
+  const [order, setOrder] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+
+  const load = useCallback(
+    () =>
+      api
+        .get(`/orders/${orderId}`)
+        .then((data) => {
+          setOrder(data.order);
+          setError(null);
+        })
+        .catch((err) => setError(err))
+        .finally(() => setLoading(false)),
+    [orderId]
+  );
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  function cancelOrder() {
+    if (cancelling) return;
+    setCancelling(true);
+    api
+      .post(`/orders/${orderId}/cancel`, {})
+      .then((data) => {
+        setOrder(data.order);
+        toast("Order cancelled", { type: "success" });
+        setConfirmingCancel(false);
+      })
+      .catch((err) => toast(getApiErrorMessage(err), { type: "error" }))
+      .finally(() => setCancelling(false));
+  }
+
+  if (loading) {
+    return (
+      <div className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6">
+        <ProductCardSkeletons count={2} />
+      </div>
+    );
+  }
+
+  if (error || !order) {
+    return (
+      <div className="mx-auto w-full max-w-2xl px-4 py-16 sm:px-6">
+        <ErrorState
+          title="Order not found"
+          message={error ? getApiErrorMessage(error) : "This order does not exist."}
+          onRetry={load}
+        />
+        <div className="mt-6 text-center">
+          <Link href="/customer/orders" className={buttonClassName("secondary")}>
+            Back to orders
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const canCancel = CANCELABLE.includes(order.status);
+  const payments = order.payments ?? [];
+
+  return (
+    <div className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <Link
+            href="/customer/orders"
+            className="text-sm font-medium text-primary transition-colors hover:text-primary-hover"
+          >
+            &larr; All orders
+          </Link>
+          <h1 className="mt-2 text-xl font-semibold tracking-tight text-ink sm:text-2xl">
+            {order.orderNumber}
+          </h1>
+          <p className="mt-1 text-sm text-muted">Placed {formatDateTime(order.createdAt)}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Badge tone={orderStatusTone(order.status)}>{orderStatusLabel(order.status)}</Badge>
+          {canCancel ? (
+            confirmingCancel ? (
+              <span className="flex items-center gap-2">
+                <Button
+                  variant="danger"
+                  size="sm"
+                  loading={cancelling}
+                  onClick={cancelOrder}
+                >
+                  Confirm cancel
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={cancelling}
+                  onClick={() => setConfirmingCancel(false)}
+                >
+                  Keep order
+                </Button>
+              </span>
+            ) : (
+              <Button variant="secondary" size="sm" onClick={() => setConfirmingCancel(true)}>
+                Cancel order
+              </Button>
+            )
+          ) : null}
+        </div>
+      </div>
+
+      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
+        {/* items */}
+        <section aria-labelledby="order-items" className="rounded-xl border border-border bg-surface p-5">
+          <h2 id="order-items" className="text-base font-semibold text-ink">
+            Items
+          </h2>
+          <ul className="mt-4 divide-y divide-border">
+            {(order.items ?? []).map((item, index) => (
+              <li key={item.id ?? index} className="flex items-start justify-between gap-4 py-3 text-sm">
+                <span className="min-w-0">
+                  <span className="block font-medium text-ink">{item.productName}</span>
+                  <span className="mt-0.5 block text-xs text-muted">
+                    {[item.size, item.color].filter(Boolean).join(" / ")} · Qty {item.quantity}{" "}
+                    · {formatPrice(item.unitPrice)} each
+                  </span>
+                </span>
+                <span className="shrink-0 font-medium text-ink">
+                  {formatPrice(item.totalPrice)}
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          <dl className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
+            <div className="flex justify-between">
+              <dt className="text-muted">Subtotal</dt>
+              <dd className="font-medium text-ink">{formatPrice(order.subtotal)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted">Delivery fee</dt>
+              <dd className="font-medium text-ink">{formatPrice(order.deliveryFee)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted">Discount</dt>
+              <dd className="font-medium text-ink">{formatPrice(order.discount)}</dd>
+            </div>
+            <div className="flex justify-between border-t border-border pt-2 text-base">
+              <dt className="font-semibold text-ink">Total</dt>
+              <dd className="font-semibold text-ink">{formatPrice(order.totalAmount)}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <div className="space-y-6">
+          {/* address */}
+          <section aria-labelledby="order-address" className="rounded-xl border border-border bg-surface p-5">
+            <h2 id="order-address" className="text-base font-semibold text-ink">
+              Delivery address
+            </h2>
+            {order.address ? (
+              <div className="mt-3 text-sm">
+                <p className="font-medium text-ink">{order.address.recipientName}</p>
+                <p className="mt-1 text-muted">{order.address.addressLine}</p>
+                <p className="text-muted">
+                  {[order.address.city, order.address.state, order.address.country]
+                    .filter(Boolean)
+                    .join(", ")}
+                </p>
+                <p className="mt-1 text-xs text-muted">{order.address.phone}</p>
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-muted">No address on record.</p>
+            )}
+          </section>
+
+          {/* payments */}
+          <section aria-labelledby="order-payment" className="rounded-xl border border-border bg-surface p-5">
+            <h2 id="order-payment" className="text-base font-semibold text-ink">
+              Payment
+            </h2>
+            {payments.length === 0 ? (
+              <p className="mt-3 text-sm text-muted">
+                No payment recorded yet — our team will confirm payment with you.
+              </p>
+            ) : (
+              <ul className="mt-3 space-y-3 text-sm">
+                {payments.map((payment) => (
+                  <li key={payment.id} className="flex items-center justify-between gap-3">
+                    <span>
+                      <span className="block font-medium text-ink">
+                        {payment.method === "CASH"
+                          ? "Cash on delivery"
+                          : payment.method === "CARD"
+                            ? "Card"
+                            : "Bank transfer"}
+                      </span>
+                      <span className="text-xs text-muted">
+                        {formatDateTime(payment.createdAt)}
+                      </span>
+                    </span>
+                    <span className="text-right">
+                      <span className="block font-medium text-ink">
+                        {formatPrice(payment.amount)}
+                      </span>
+                      <span className="text-xs text-muted">
+                        {paymentStatusLabel(payment.status)}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}

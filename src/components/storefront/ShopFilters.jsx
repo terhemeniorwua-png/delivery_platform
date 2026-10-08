@@ -7,8 +7,19 @@ import { buildQuery } from "@/lib/url";
 /**
  * Shop filters: category pills (server-provided categories) + min/max price
  * (both supported by GET /api/products). Any change resets to page 1.
+ *
+ * - `showCategories={false}` hides the pills (used on category pages where
+ *   the category comes from the route, not the query string).
+ * - `idPrefix` keeps element IDs unique when the same filters render twice
+ *   (desktop inline + mobile sheet).
  */
-export default function ShopFilters({ basePath = "/shop", current = {}, categories = [] }) {
+export default function ShopFilters({
+  basePath = "/shop",
+  current = {},
+  categories = [],
+  showCategories = true,
+  idPrefix = "",
+}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [minPrice, setMinPrice] = useState(current.minPrice ?? "");

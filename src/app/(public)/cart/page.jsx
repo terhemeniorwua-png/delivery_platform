@@ -238,14 +238,9 @@ export default function CartPage() {
                     Unit price {formatPrice(item.unitPrice)}
                   </p>
 
-                  {inactive ? (
-                    <p role="alert" className="mt-2 text-xs font-medium text-error">
-                      This item is no longer available. Please remove it before continuing.
-                    </p>
-                  ) : overStock ? (
-                    <p role="alert" className="mt-2 text-xs font-medium text-warning">
-                      Only {item.availableStock} left in stock — reduce the quantity or remove
-                      the item.
+                  {warning ? (
+                    <p role="alert" className={`mt-2 text-xs font-medium ${warningTone}`}>
+                      {warning}
                     </p>
                   ) : null}
                   {itemErrors[item.id] ? (
@@ -296,12 +291,6 @@ export default function CartPage() {
                     {busy ? "Working…" : "Remove"}
                   </button>
                 </div>
-
-                {outOfStock && !inactive ? (
-                  <div className="mt-3 sm:col-span-full">
-                    <Badge tone="warning">Out of stock</Badge>
-                  </div>
-                ) : null}
               </li>
             );
           })}
@@ -336,9 +325,7 @@ export default function CartPage() {
             fullWidth
             className="mt-5"
             disabled={hasBlockedItems}
-            onClick={() => {
-              window.location.assign("/checkout");
-            }}
+            onClick={() => router.push("/checkout")}
           >
             Proceed to checkout
           </Button>
