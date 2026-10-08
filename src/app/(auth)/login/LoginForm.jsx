@@ -58,9 +58,28 @@ export default function LoginForm() {
   return (
     <div className="mx-auto w-full max-w-md px-4 py-14 sm:px-6 sm:py-20">
       <div className="mb-8 flex justify-center">
-        <Logo size={46} />
+        <Logo size={46} href="/" />
       </div>
       <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
+        <div className="-mt-1 mb-3 flex justify-end">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-muted transition-colors hover:text-primary"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 12H5m0 0 6 6m-6-6 6-6" />
+            </svg>
+            Back to home
+          </Link>
+        </div>
         <h1 className="text-2xl font-semibold tracking-tight text-ink">Welcome back</h1>
         <p className="mt-1 text-sm text-muted">
           Sign in to keep shopping and track your orders.
