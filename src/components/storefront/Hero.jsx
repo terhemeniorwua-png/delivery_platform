@@ -30,8 +30,9 @@ export default function Hero() {
         <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em] text-sand-600">
           New season &middot; delivered to you
         </p>
-        <h1 className="animate-fade-up animate-delay-1 mt-4 text-4xl font-semibold leading-[1.08] tracking-tight text-ink sm:text-5xl lg:text-6xl">
-          Fashion delivered to your doorstep.
+        <h1 className="animate-fade-up animate-delay-1 mt-4 text-5xl font-semibold leading-[1.1] tracking-tight text-ink sm:text-6xl lg:text-7xl">
+          Fashion delivered to your&nbsp;
+          <span className="block">doorstep.</span>
         </h1>
         <p className="animate-fade-up animate-delay-2 mx-auto mt-5 max-w-xl text-base leading-relaxed text-sand-600 sm:text-lg">
           Browse curated clothing for men, women and kids — pick your size and
