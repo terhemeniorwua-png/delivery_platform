@@ -1,0 +1,216 @@
+# Clothing Delivery Platform — Backend API
+
+Express 5 + PostgreSQL REST API for a clothing commerce and delivery platform:
+customers browse a catalogue, manage a cart, place orders and pay; admins manage
+the catalogue, orders, riders and payments; riders manage their deliveries.
+
+## Stack
+
+- Node 18+ (Express 5, helmet, cors)
+- PostgreSQL via Sequelize + sequelize-cli (migrations, seeders)
+- JWT (`jsonwebtoken`) + bcrypt for auth
+- zod for request validation
+- No secrets in code: everything is read from `.env`
+
+## Getting started
+
+```bash
+cd backend
+cp .env.example .env          # then fill in real values
+npm install
+
+npm run migrate               # apply migrations
+npm run seed                  # demo data
+npm start                     # or: npm run dev (auto restart)
+```
+
+Health check: `GET http://localhost:5100/api/health`
+
+Environment variables are documented in `.env.example`. `DATABASE_URL` points to
+PostgreSQL; TLS is enforced with the CA file referenced by `DB_SSL_CA_PATH`
+verification is never disabled).
+
+## Demo accounts
+
+Seeded users (password `Password123!` — development data only):
+
+| Role     | Email                              |
+| -------- | ---------------------------------- |
+| ADMIN    | admin@clothing-delivery.test       |
+| RIDER    | musa.rider@clothing-delivery.test  |
+| RIDER    | kelechi.rider@clothing-delivery.test |
+| CUSTOMER | ada.customer@clothing-delivery.test |
+
+## Conventions
+
+- All endpoints live under `/api`.
+- Success: `{ "success": true, "message": "...", "data": { ... } }`
+- Error: `{ "success": false, "message": "...", "errors": [ { "path", "message" } ] }`
+- Auth: `Authorization: Bearer <token>`; tokens come from `/api/auth/*`.
+- Pagination: `page` / `limit` query params, response carries
+  `data.pagination = { page, limit, total, totalPages }`.
+- Money is stored as `DECIMAL(12,2)` and returned as numbers.
+
+## Roles
+
+`CUSTOMER`, `RIDER`, `ADMIN` — enforced per route by `authorize(...roles)`.
+
+## Endpoints
+
+### Auth
+| Method | Path                    | Role         | Description                |
+| ------ | ----------------------- | ------------ | -------------------------- |
+| POST   | /api/auth/register      | public       | Register a customer        |
+| POST   | /api/auth/login         | public       | Sign in, returns JWT       |
+| GET    | /api/auth/me            | any          | Current profile            |
+| PATCH  | /api/auth/me            | any          | Update name/phone          |
+| PATCH  | /api/auth/password      | any          | Change password            |
+
+### Addresses
+| Method | Path                        | Role     |
+| ------ | --------------------------- | -------- |
+| GET    | /api/addresses              | any      |
+| POST   | /api/addresses              | any      |
+| PATCH  | /api/addresses/:id          | owner    |
+| DELETE | /api/addresses/:id          | owner    |
+| POST   | /api/addresses/:id/default  | owner    |
+
+### Catalogue (public read, admin write)
+| Method | Path                                      | Role   |
+| ------ | ----------------------------------------- | ------ |
+| GET    | /api/categories                            | public |
+| GET    | /api/categories/:idOrSlug                  | public |
+| POST   | /api/categories                            | ADMIN  |
+| PATCH  | /api/categories/:id                        | ADMIN  |
+| DELETE | /api/categories/:id                        | ADMIN  |
+| GET    | /api/products                              | public (ACTIVE only; filters: search, category, brand, minPrice, maxPrice, sort) |
+| GET    | /api/products/:idOrSlug                    | public |
+| GET    | /api/products/admin                        | ADMIN  |
+| GET    | /api/products/admin/:idOrSlug              | ADMIN  |
+| POST   | /api/products                              | ADMIN  |
+| PATCH  | /api/products/:id                          | ADMIN  |
+| DELETE | /api/products/:id                          | ADMIN  (blocked when order history exists) |
+| POST   | /api/products/:id/variants                 | ADMIN  |
+| PATCH  | /api/products/:id/variants/:variantId      | ADMIN  |
+| DELETE | /api/products/:id/variants/:variantId      | ADMIN  |
+| PUT    | /api/products/variants/:variantId/stock    | ADMIN  (`quantity`, `mode: set\|increment`) |
+| POST   | /api/products/:id/images                   | ADMIN  |
+| PATCH  | /api/products/:id/images/:imageId          | ADMIN  (set primary) |
+| DELETE | /api/products/:id/images/:imageId          | ADMIN  |
+
+### Cart
+| Method | Path                        | Role   |
+| ------ | --------------------------- | ------ |
+| GET    | /api/cart                   | any    |
+| POST   | /api/cart/items             | any    |
+| PATCH  | /api/cart/items/:itemId     | owner  |
+| DELETE | /api/cart/items/:itemId     | owner  |
+| DELETE | /api/cart                   | any    |
+
+### Orders
+| Method | Path                     | Role              | Notes |
+| ------ | ------------------------ | ----------------- | ----- |
+| POST   | /api/orders              | CUSTOMER          | Checkout from cart; locks variants, decrements stock, clears cart |
+| GET    | /api/orders              | CUSTOMER, ADMIN   | Customers see their own; admins can filter `status`, `userId`, `search` |
+| GET    | /api/orders/:id          | CUSTOMER, ADMIN   |
+| POST   | /api/orders/:id/cancel   | CUSTOMER, ADMIN   | Restores stock, cancels delivery, refunds/fails payments |
+| PATCH  | /api/orders/:id/status   | ADMIN             | State machine only (see below) |
+| POST   | /api/orders/:id/assign   | ADMIN             | Assign a rider, creates a delivery |
+
+### Payments
+| Method | Path                       | Role           | Notes |
+| ------ | -------------------------- | -------------- | ----- |
+| POST   | /api/payments              | CUSTOMER, ADMIN| Amount always mirrors the order total. `CASH` → `PENDING` (collected on delivery); `CARD`/`TRANSFER` → `SUCCESSFUL` immediately and auto-confirms a `PENDING` order |
+| GET    | /api/payments              | CUSTOMER, ADMIN| |
+| GET    | /api/payments/:id          | CUSTOMER, ADMIN| |
+| PATCH  | /api/payments/:id/status   | ADMIN          | `PENDING→SUCCESSFUL\|FAILED`, `SUCCESSFUL→REFUNDED` |
+
+### Riders
+| Method | Path                            | Role   |
+| ------ | ------------------------------- | ------ |
+| GET    | /api/riders                     | ADMIN  |
+| POST   | /api/riders                     | ADMIN  |
+| GET    | /api/riders/:id                 | ADMIN  |
+| PATCH  | /api/riders/:id                 | ADMIN  |
+| GET    | /api/riders/me/profile          | RIDER  |
+| PATCH  | /api/riders/me/availability     | RIDER  (`AVAILABLE` \| `OFFLINE`) |
+
+### Deliveries
+| Method | Path                          | Role          | Notes |
+| ------ | ----------------------------- | ------------- | ----- |
+| GET    | /api/deliveries               | any (scoped)  | Customers see theirs, riders theirs, admins all |
+| POST   | /api/deliveries               | ADMIN         | Requires order `READY_FOR_PICKUP` and an `AVAILABLE` rider |
+| GET    | /api/deliveries/:id           | any (scoped)  | Includes event history |
+| PATCH  | /api/deliveries/:id/reassign  | ADMIN         | Only while `PENDING`/`ASSIGNED` |
+| PATCH  | /api/deliveries/:id/status    | ADMIN, RIDER  | Riders only on their own delivery |
+
+### Admin
+| Method | Path                          | Role  |
+| ------ | ----------------------------- | ----- |
+| GET    | /api/admin/users              | ADMIN |
+| PATCH  | /api/admin/users/:id/status   | ADMIN (admin accounts and users with active orders are protected) |
+
+## Business rules
+
+**Order state machine** (`PATCH /api/orders/:id/status`):
+
+```
+PENDING → CONFIRMED → PROCESSING → READY_FOR_PICKUP → OUT_FOR_DELIVERY → DELIVERED
+   └──────────┴─────────────┴──────────┘ =→ CANCELLED (except OUT_FOR_DELIVERY onward)
+```
+
+- `CONFIRMED` requires a payment that is `SUCCESSFUL`, or a `CASH` payment in
+  `PENDING` (cash is collected on delivery).
+- `OUT_FOR_DELIVERY` / `DELIVERED` must be driven through the delivery
+  endpoint (they also advance the delivery record).
+
+**Stock**: decremented inside the checkout transaction with `FOR UPDATE` row
+locks (variants locked in id order); restored on cancellation; product status
+auto-flips between `ACTIVE` and `OUT_OF_STOCK`.
+
+**Delivery state machine**:
+
+```
+ASSIGNED → PICKED_UP → IN_TRANSIT → DELIVERED
+   └──────────┴───────────┘ =→ CANCELLED (admins only)
+```
+
+- Assigning sets the rider `BUSY`; delivery `DELIVERED`/`CANCELLED` sets them
+  `AVAILABLE` again once they have no other active deliveries.
+- `PICKED_UP` moves the order to `OUT_FOR_DELIVERY`; `DELIVERED` completes the
+  order and marks a `PENDING` `CASH` payment `SUCCESSFUL`.
+- Every transition writes a `delivery_events` row (actor, from, to, note).
+
+**Cancellation** (`POST /api/orders/:id/cancel`): customers may cancel
+`PENDING`/`CONFIRMED`; admins may cancel anything short of `DELIVERED`.
+Cancelling restores stock, cancels an active delivery (freeing the rider),
+refunds `SUCCESSFUL` payments and fails `PENDING` ones.
+
+## Project structure
+
+```
+backend/
+├── config/               sequelize-cli config + .sequelizerc paths
+├── migrations/           table definitions
+├── seeders/              demo users, catalogue and orders
+└── src/
+    ├── app.js            express app (helmet, cors, json, routes, errors)
+    ├── server.js         boots the app and verifies the DB connection
+    ├── config/           env loading, network tuning, TLS/SSL helpers
+    ├── constants/        enums and state-transition maps
+    ├── controllers/      HTTP layer (thin: validate -> service -> respond)
+    ├── middleware/       authenticate, authorize, validate, error handler
+    ├── models/           Sequelize models + associations
+    ├── routes/           route definitions per resource
+    ├── services/         business logic and transactions
+    ├── validators/       zod schemas (query, params, body)
+    └── utils/            response helpers, error factories, misc helpers
+```
+
+## Security notes
+
+- `.env` and `*.pem` are git-ignored; `.env.example` contains placeholders only.
+- Passwords are bcrypt-hashed; profiles never return the password column.
+- The error handler never leaks stack traces or database internals to clients.
+- TLS to PostgreSQL uses the CA file with `rejectUnauthorized: true`.
+- `helmet` sets secure HTTP headers; CORS is restricted to `FRONTEND_URL`.
