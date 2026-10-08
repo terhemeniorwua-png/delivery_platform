@@ -53,9 +53,13 @@ export default function OrdersView({ current = {} }) {
   const [attempt, setAttempt] = useState(0);
 
   // Keep the input in sync when the URL changes (e.g. back/forward, clear).
-  useEffect(() => {
+  // Adjusting state during render is the sanctioned alternative to an
+  // effect-driven setState (which would trigger a cascading render).
+  const [searchDraft, setSearchDraft] = useState(search);
+  if (search !== lastSearch) {
+    setLastSearch(search);
     setSearchDraft(search);
-  }, [search]);
+  }
 
   useEffect(() => {
     let cancelled = false;

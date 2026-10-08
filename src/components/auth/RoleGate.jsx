@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Spinner from "@/components/ui/Spinner";
 
@@ -33,20 +33,26 @@ export default function RoleGate({
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   const allowed =
     !roles || roles.length === 0 || (user && roles.includes(user.role));
 
+  // Send users back where they were headed after signing in.
+  const loginTarget = pathname
+    ? `${loginHref}${loginHref.includes("?") ? "&" : "?"}next=${encodeURIComponent(pathname)}`
+    : loginHref;
+
   useEffect(() => {
     if (loading) return;
     if (!user) {
-      router.replace(loginHref);
+      router.replace(loginTarget);
       return;
     }
     if (!allowed) {
       router.replace(homeByRole[user.role] ?? "/");
     }
-  }, [loading, user, allowed, router, loginHref, homeByRole]);
+  }, [loading, user, allowed, router, loginTarget, homeByRole]);
 
   if (loading) {
     return (
