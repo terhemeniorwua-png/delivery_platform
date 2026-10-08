@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import SearchField from "@/components/storefront/SearchField";
 import ShopFilters from "@/components/storefront/ShopFilters";
+import MobileFilters from "@/components/storefront/MobileFilters";
 import SortSelect from "@/components/storefront/SortSelect";
 import Pagination from "@/components/storefront/Pagination";
 import ProductGridWithItems from "@/components/storefront/ProductGrid";
@@ -64,16 +65,17 @@ export default async function ShopPage({ searchParams }) {
         <SortSelect basePath="/shop" current={params} value={query.sort} />
       </div>
 
-      <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-6">
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
         <SearchField
           basePath="/shop"
           current={params}
           value={query.search ?? ""}
-          className="lg:max-w-sm"
+          className="w-full sm:max-w-sm"
         />
+        <MobileFilters basePath="/shop" current={params} categories={categories} />
       </div>
 
-      <div className="mt-5 border-b border-border pb-5">
+      <div className="mt-5 hidden border-b border-border pb-5 lg:block">
         <ShopFilters basePath="/shop" current={params} categories={categories} />
       </div>
 

@@ -2,6 +2,9 @@ import { cache } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import SortSelect from "@/components/storefront/SortSelect";
+import SearchField from "@/components/storefront/SearchField";
+import ShopFilters from "@/components/storefront/ShopFilters";
+import MobileFilters from "@/components/storefront/MobileFilters";
 import Pagination from "@/components/storefront/Pagination";
 import ProductGridWithItems from "@/components/storefront/ProductGrid";
 import EmptyState from "@/components/ui/EmptyState";
@@ -29,6 +32,9 @@ async function loadData(slug, params) {
     limit: 12,
     sort: params.sort || "newest",
     category: slug,
+    search: params.q?.trim() || undefined,
+    minPrice: params.minPrice ? Number(params.minPrice) : undefined,
+    maxPrice: params.maxPrice ? Number(params.maxPrice) : undefined,
   };
 
   try {
@@ -59,6 +65,10 @@ export default async function CategoryPage({ params, searchParams }) {
   const { slug } = await params;
   const flat = normalizeSearchParams(await searchParams);
   const { category, products, pagination, query } = await loadData(slug, flat);
+  const filtersActive = Boolean(
+    query.search || query.minPrice !== undefined || query.maxPrice !== undefined
+  );
+  const basePath = `/categories/${slug}`;
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-12">
@@ -92,9 +102,34 @@ export default async function CategoryPage({ params, searchParams }) {
           ) : null}
           <p className="mt-2 text-sm text-muted" aria-live="polite">
             {productCountLabel(pagination.total)}
+            {query.search ? (
+              <>
+                {" "}
+                for <span className="font-medium text-ink">&ldquo;{query.search}&rdquo;</span>
+              </>
+            ) : null}
           </p>
         </div>
-        <SortSelect basePath={`/categories/${slug}`} current={flat} value={query.sort} />
+        <SortSelect basePath={basePath} current={flat} value={query.sort} />
+      </div>
+
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <SearchField
+          basePath={basePath}
+          current={flat}
+          value={query.search ?? ""}
+          className="w-full sm:max-w-sm"
+        />
+        <MobileFilters basePath={basePath} current={flat} categories={[]} />
+      </div>
+
+      <div className="mt-5 hidden border-b border-border pb-5 lg:block">
+        <ShopFilters
+          basePath={basePath}
+          current={flat}
+          categories={[]}
+          showCategories={false}
+        />
       </div>
 
       <div className="mt-8">
@@ -102,12 +137,22 @@ export default async function CategoryPage({ params, searchParams }) {
           <>
             <ProductGridWithItems products={products} />
             <Pagination
-              basePath={`/categories/${slug}`}
+              basePath={basePath}
               current={flat}
               page={pagination.page}
               totalPages={pagination.totalPages}
             />
           </>
+        ) : filtersActive ? (
+          <EmptyState
+            title="No products match your filters"
+            description="Try a different search or price range in this category."
+            action={
+              <Link href={basePath} className={buttonClassName()}>
+                Clear filters
+              </Link>
+            }
+          />
         ) : (
           <EmptyState
             title="No products in this category yet"

@@ -184,6 +184,9 @@ export default function ProductPurchase({ product }) {
             {size} / {color}
           </span>{" "}
           — {variantStock} in stock
+          {selectedVariant?.sku ? (
+            <span className="block text-xs text-muted/80">SKU {selectedVariant.sku}</span>
+          ) : null}
         </p>
       )}
 
@@ -238,7 +241,10 @@ export default function ProductPurchase({ product }) {
               : "Add to cart"}
         </Button>
       ) : (
-        <Link href="/login" className={buttonClassName("primary", "lg", "w-full")}>
+        <Link
+          href={`/login?next=${encodeURIComponent(`/products/${product.slug}`)}`}
+          className={buttonClassName("primary", "lg", "w-full")}
+        >
           Sign in to add to cart
         </Link>
       )}

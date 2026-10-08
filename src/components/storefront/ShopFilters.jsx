@@ -55,51 +55,56 @@ export default function ShopFilters({
 
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="sr-only">Filter by category</h2>
-        <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by category">
-          <button
-            type="button"
-            onClick={() => apply({ category: "" })}
-            disabled={isPending}
-            aria-pressed={!activeCategory}
-            className={`${pillBase} ${
-              !activeCategory
-                ? "border-primary bg-primary text-white"
-                : "border-border bg-surface text-muted hover:border-primary/40 hover:text-ink"
-            }`}
-          >
-            All
-          </button>
-          {categories.map((category) => {
-            const active = activeCategory === category.slug;
-            return (
-              <button
-                key={category.id}
-                type="button"
-                onClick={() => apply({ category: active ? "" : category.slug })}
-                disabled={isPending}
-                aria-pressed={active}
-                className={`${pillBase} ${
-                  active
-                    ? "border-primary bg-primary text-white"
-                    : "border-border bg-surface text-muted hover:border-primary/40 hover:text-ink"
-                }`}
-              >
-                {category.name}
-              </button>
-            );
-          })}
+      {showCategories ? (
+        <div>
+          <h2 className="sr-only">Filter by category</h2>
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by category">
+            <button
+              type="button"
+              onClick={() => apply({ category: "" })}
+              disabled={isPending}
+              aria-pressed={!activeCategory}
+              className={`${pillBase} ${
+                !activeCategory
+                  ? "border-primary bg-primary text-white"
+                  : "border-border bg-surface text-muted hover:border-primary/40 hover:text-ink"
+              }`}
+            >
+              All
+            </button>
+            {categories.map((category) => {
+              const active = activeCategory === category.slug;
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => apply({ category: active ? "" : category.slug })}
+                  disabled={isPending}
+                  aria-pressed={active}
+                  className={`${pillBase} ${
+                    active
+                      ? "border-primary bg-primary text-white"
+                      : "border-border bg-surface text-muted hover:border-primary/40 hover:text-ink"
+                  }`}
+                >
+                  {category.name}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      ) : null}
 
       <form onSubmit={applyPrice} className="flex flex-wrap items-end gap-3">
         <div>
-          <label htmlFor="min-price" className="mb-1 block text-xs font-medium text-muted">
+          <label
+            htmlFor={`${idPrefix}min-price`}
+            className="mb-1 block text-xs font-medium text-muted"
+          >
             Min price (&#8358;)
           </label>
           <input
-            id="min-price"
+            id={`${idPrefix}min-price`}
             type="number"
             min="0"
             inputMode="numeric"
@@ -110,11 +115,14 @@ export default function ShopFilters({
           />
         </div>
         <div>
-          <label htmlFor="max-price" className="mb-1 block text-xs font-medium text-muted">
+          <label
+            htmlFor={`${idPrefix}max-price`}
+            className="mb-1 block text-xs font-medium text-muted"
+          >
             Max price (&#8358;)
           </label>
           <input
-            id="max-price"
+            id={`${idPrefix}max-price`}
             type="number"
             min="0"
             inputMode="numeric"

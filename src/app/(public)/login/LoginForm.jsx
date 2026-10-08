@@ -14,7 +14,10 @@ export default function LoginForm() {
   const searchParams = useSearchParams();
   const { login, isAuthenticated, loading: authLoading } = useAuth();
 
-  const next = safeInternalPath(searchParams.get("next"), null);
+  const rawNext = safeInternalPath(searchParams.get("next"), null);
+  // never bounce back to an auth screen (prevents redirect loops)
+  const next =
+    rawNext && !rawNext.startsWith("/login") && !rawNext.startsWith("/register") ? rawNext : null;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
