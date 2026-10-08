@@ -66,6 +66,8 @@ Seeded users (password `Password123!` — development data only):
 | ------ | ----------------------- | ------------ | -------------------------- |
 | POST   | /api/auth/register      | public       | Register a **customer** (`role` in the body is ignored — always `CUSTOMER`) |
 | POST   | /api/auth/login         | public       | Sign in, returns JWT       |
+| POST   | /api/auth/forgot-password | public     | Stores a 6-digit reset code (hashed) in `password_resets` and returns the plain code for the dev UI |
+| POST   | /api/auth/reset-password | public      | Exchanges `{ email, code, newPassword }` for a new password (codes are single-use, 15-min expiry) |
 | GET    | /api/auth/me            | any          | Current profile            |
 | PATCH  | /api/auth/me            | any          | Update name/phone          |
 | PATCH  | /api/auth/password      | any          | Change password            |
@@ -248,6 +250,9 @@ backend/
 
 - `.env` and `*.pem` are git-ignored; `.env.example` contains placeholders only.
 - Passwords are bcrypt-hashed; profiles never return the password column.
+- Password-reset codes are bcrypt-hashed in the `password_resets` table,
+  single-use, and expire after 15 minutes; the plain code is only returned by
+  the API because this demo has no mailer (production should email it).
 - The error handler never leaks stack traces or database internals to clients.
 - TLS to PostgreSQL uses the CA file with `rejectUnauthorized: true`.
 - `helmet` sets secure HTTP headers; CORS is restricted to `FRONTEND_URL`.

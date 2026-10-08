@@ -143,6 +143,7 @@ navigation is passed in, never duplicated.
 | Route                        | Data / behaviour |
 | ---------------------------- | ---------------- |
 | `/login`, `/register`        | `POST /auth/login`, `POST /auth/register` (server shells + client forms; `?next=` returns you to the page you came from, validated against open redirects and never pointing back at an auth screen) |
+| `/forgot-password`           | two-step reset: email → code alert (`POST /auth/forgot-password`) → code + new password (`POST /auth/reset-password`), wrong code shows an unsuccessful alert and allows another attempt |
 | `/customer`                  | dashboard (`GET /orders {limit:5}`) — greeting, totals, active-order banner, rider-application card, recent orders; `/customer/dashboard` redirects here |
 | `/customer/orders`           | paginated own-order list (`GET /orders`) with server-side status filter pills (`?status=`) and order-number search (`?search=`), plus payment method/status and delivery status per order |
 | `/customer/orders/[id]`      | order detail (`GET /orders/:id`) — progress timeline, best-effort item images, "buy again" per item (`POST /cart/items`), delivery status + rider, totals, address, payments; cancel via confirmation modal (`POST /orders/:id/cancel`) while PENDING/CONFIRMED |
@@ -285,5 +286,8 @@ The `/admin` area (`RoleGate → ADMIN`) contains:
 
 Auth additions: admin creation exists only behind the console (login-only
 registration — the public register endpoint is hardcoded to `CUSTOMER`), and
-`/forgot-password` provides the UI-only "forgot password" flow (no reset
-mailer/endpoint yet, so it stops at a confirmation message).
+`/forgot-password` is a real reset flow: `POST /auth/forgot-password` stores a
+hashed 6-digit code in a `password_resets` table (returning the plain code to
+the UI since this demo has no mailer — it appears in an alert), then
+`POST /auth/reset-password` verifies the code and sets a new password (codes
+are single-use, 15-minute expiry).
