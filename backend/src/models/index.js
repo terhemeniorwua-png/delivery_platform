@@ -16,6 +16,7 @@ const Rider = require('./Rider');
 const RiderApplication = require('./RiderApplication');
 const Delivery = require('./Delivery');
 const DeliveryEvent = require('./DeliveryEvent');
+const PasswordReset = require('./PasswordReset');
 
 // User
 User.hasMany(Address, { foreignKey: 'userId', as: 'addresses', onDelete: 'CASCADE' });
@@ -32,6 +33,9 @@ Rider.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 User.hasMany(RiderApplication, { foreignKey: 'userId', as: 'riderApplications', onDelete: 'CASCADE' });
 RiderApplication.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+User.hasMany(PasswordReset, { foreignKey: 'userId', as: 'passwordResets', onDelete: 'CASCADE' });
+PasswordReset.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 // Catalog
 Category.hasMany(Product, { foreignKey: 'categoryId', as: 'products' });
@@ -89,4 +93,5 @@ module.exports = {
   RiderApplication,
   Delivery,
   DeliveryEvent,
+  PasswordReset,
 };

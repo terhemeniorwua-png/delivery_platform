@@ -6,6 +6,8 @@ const v = require('../validators/auth.validator');
 
 router.post('/register', validate({ body: v.registerSchema }), controller.register);
 router.post('/login', validate({ body: v.loginSchema }), controller.login);
+router.post('/forgot-password', validate({ body: v.forgotPasswordSchema }), controller.forgotPassword);
+router.post('/reset-password', validate({ body: v.resetPasswordSchema }), controller.resetPassword);
 router.get('/me', authenticate, controller.me);
 router.patch('/me', authenticate, validate({ body: v.updateProfileSchema }), controller.updateMe);
 router.patch(
