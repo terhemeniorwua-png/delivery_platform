@@ -19,13 +19,16 @@ export default function SearchField({
 }) {
   const router = useRouter();
   const [text, setText] = useState(value);
+  const [lastValue, setLastValue] = useState(value);
   const [isPending, startTransition] = useTransition();
   const firstRun = useRef(true);
 
-  // Keep in sync when the URL changes from elsewhere (back/forward, clear).
-  useEffect(() => {
+  // Keep the box in sync when the URL changes elsewhere (back/forward, clear)
+  // — render-phase adjustment instead of a setState-in-effect.
+  if (value !== lastValue) {
+    setLastValue(value);
     setText(value);
-  }, [value]);
+  }
 
   useEffect(() => {
     if (firstRun.current) {

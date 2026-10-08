@@ -13,7 +13,7 @@ const SUPPORT_EMAIL = "admin@clothing-delivery.test";
  * the message pre-filled — honest, working, no fake success states.
  */
 export default function ContactForm() {
-  const toast = useToast();
+  const { toast } = useToast();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");

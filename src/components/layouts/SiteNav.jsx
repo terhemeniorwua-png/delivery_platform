@@ -83,25 +83,34 @@ export function HeaderSearch() {
   );
 }
 
+/* Shared loader — the header renders this button twice (desktop + mobile
+   drawer), so concurrent refreshes share one in-flight request. */
+let countRequest = null;
+function fetchCartCount() {
+  if (!countRequest) {
+    countRequest = api
+      .get("/cart")
+      .then((data) => data.cart?.itemCount ?? 0)
+      .catch(() => null)
+      .finally(() => {
+        countRequest = null;
+      });
+  }
+  return countRequest;
+}
+
 /** Cart link with a live item count for signed-in shoppers. */
 export function CartButton() {
   const { isAuthenticated } = useAuth();
   const [count, setCount] = useState(null);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      setCount(null);
-      return undefined;
-    }
+    if (!isAuthenticated) return undefined;
     let alive = true;
-    async function load() {
-      try {
-        const data = await api.get("/cart");
-        if (alive) setCount(data.cart?.itemCount ?? 0);
-      } catch {
-        if (alive) setCount(null);
-      }
-    }
+    const load = () =>
+      fetchCartCount().then((value) => {
+        if (alive) setCount(value);
+      });
     load();
     const onUpdate = () => load();
     window.addEventListener("cart:updated", onUpdate);
@@ -111,10 +120,13 @@ export function CartButton() {
     };
   }, [isAuthenticated]);
 
+  // Stale counts are hidden (not cleared) when signed out.
+  const shownCount = isAuthenticated ? count : null;
+
   return (
     <Link
       href="/cart"
-      aria-label={count ? `Cart, ${count} items` : "Cart"}
+      aria-label={shownCount ? `Cart, ${shownCount} items` : "Cart"}
       className="relative rounded-lg p-2 text-ink transition-colors hover:bg-background"
     >
       <svg
@@ -131,9 +143,9 @@ export function CartButton() {
           d="M3 4h2l2.4 10.2a2 2 0 0 0 2 1.55h7.5a2 2 0 0 0 1.95-1.57L20.5 7H6m2.5 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm8 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
         />
       </svg>
-      {count ? (
+      {shownCount ? (
         <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none text-white">
-          {count > 99 ? "99+" : count}
+          {shownCount > 99 ? "99+" : shownCount}
         </span>
       ) : null}
     </Link>

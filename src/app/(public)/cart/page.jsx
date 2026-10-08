@@ -22,27 +22,31 @@ export default function CartPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await api.get("/cart");
-      setCart(data.cart);
-    } catch (err) {
-      setError(err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // Promise-chain so every setState lives in an async callback (safe to call
+  // from the effect below — first paint relies on `loading: true`).
+  const load = useCallback(
+    () =>
+      api
+        .get("/cart")
+        .then((data) => {
+          setCart(data.cart);
+          setError(null);
+        })
+        .catch((err) => setError(err))
+        .finally(() => setLoading(false)),
+    []
+  );
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!isAuthenticated) {
-      setLoading(false);
-      return;
-    }
+    if (authLoading || !isAuthenticated) return;
     load();
   }, [authLoading, isAuthenticated, load]);
+
+  function retry() {
+    setLoading(true);
+    setError(null);
+    load();
+  }
 
   if (authLoading) {
     return (
@@ -82,7 +86,7 @@ export default function CartPage() {
         <ErrorState
           title="Unable to load your cart"
           message={getApiErrorMessage(error)}
-          onRetry={load}
+          onRetry={retry}
         />
       </div>
     );

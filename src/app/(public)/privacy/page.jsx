@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export const metadata = {
   title: "Privacy Policy",
   description: "How the Clothing Delivery Platform handles your information.",
@@ -42,9 +44,9 @@ export default function PrivacyPage() {
           <h2 className="text-base font-semibold text-ink">Contact</h2>
           <p className="mt-2">
             Questions about your data? Reach us through the{" "}
-            <a href="/contact" className="font-medium text-primary hover:underline">
+            <Link href="/contact" className="font-medium text-primary hover:underline">
               contact page
-            </a>
+            </Link>
             .
           </p>
         </section>

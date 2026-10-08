@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -15,13 +15,11 @@ import { usePathname } from "next/navigation";
  *              (used for the cart button: Logo / Cart / Menu on mobile)
  */
 export default function SiteHeader({ nav = null, actions = null, trailing = null }) {
-  const [menuOpen, setMenuOpen] = useState(false);
+  // The drawer is "open for the pathname it was opened on" — changing route
+  // closes it automatically, without an effect.
+  const [openedFor, setOpenedFor] = useState(null);
   const pathname = usePathname();
-
-  // Close the drawer whenever the route changes (link clicks inside it).
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
+  const menuOpen = openedFor === pathname;
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-surface/90 backdrop-blur">
@@ -47,7 +45,7 @@ export default function SiteHeader({ nav = null, actions = null, trailing = null
           <div className="flex items-center md:hidden">{trailing}</div>
           <button
             type="button"
-            onClick={() => setMenuOpen((open) => !open)}
+            onClick={() => setOpenedFor(openedFor ? null : pathname)}
             aria-expanded={menuOpen}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             className="rounded-lg p-2 text-ink transition-colors hover:bg-background md:hidden"
@@ -75,7 +73,7 @@ export default function SiteHeader({ nav = null, actions = null, trailing = null
         <div
           className="border-t border-border bg-surface px-4 py-3 md:hidden"
           onClick={(event) => {
-            if (event.target.closest("a")) setMenuOpen(false);
+            if (event.target.closest("a")) setOpenedFor(null);
           }}
         >
           <div className="mb-3">{actions ? <div className="flex flex-col gap-2">{actions}</div> : null}</div>

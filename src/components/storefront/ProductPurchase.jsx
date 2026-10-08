@@ -19,7 +19,7 @@ const MAX_QTY = 10;
  */
 export default function ProductPurchase({ product }) {
   const { isAuthenticated } = useAuth();
-  const toast = useToast();
+  const { toast } = useToast();
 
   const { sizes, colors } = useMemo(() => variantAxes(product.variants), [product.variants]);
   const [size, setSize] = useState(sizes.length === 1 ? sizes[0] : "");

@@ -9,12 +9,32 @@ function resolveCaPath() {
   return path.resolve(backendRoot, raw);
 }
 
+// Reads the CA certificate contents from an environment variable (used on Render).
+// Handles values pasted with literal "\n" sequences or wrapped in quotes.
+function loadCaFromEnv() {
+  const raw = process.env.DB_SSL_CA || process.env.DB_CA_CERT;
+  if (!raw) return undefined;
+  const pem = raw.trim().replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
+  return pem || undefined;
+}
+
 function buildSslConfig() {
-  const caPath = resolveCaPath();
-  let ca;
-  if (caPath && fs.existsSync(caPath)) {
-    ca = fs.readFileSync(caPath, 'utf8');
+  let ca = loadCaFromEnv();
+
+  if (!ca) {
+    const caPath = resolveCaPath();
+    if (caPath && fs.existsSync(caPath)) {
+      ca = fs.readFileSync(caPath, 'utf8');
+    }
   }
+
+  if (!ca) {
+    console.warn(
+      '[db] No CA certificate found (set DB_CA_CERT / DB_SSL_CA or DB_SSL_CA_PATH). ' +
+        'TLS verification will likely fail against Aiven.'
+    );
+  }
+
   return ca
     ? { require: true, rejectUnauthorized: true, ca }
     : { require: true, rejectUnauthorized: true };
