@@ -81,9 +81,9 @@ export default function AdminRiders() {
             event.preventDefault();
             setQuery(search);
           }}
-          className="flex items-end gap-2"
+          className="flex flex-col gap-3 sm:flex-row sm:items-end"
         >
-          <div className="w-56">
+          <div className="w-full sm:w-56">
             <Input
               label="Search riders"
               type="search"

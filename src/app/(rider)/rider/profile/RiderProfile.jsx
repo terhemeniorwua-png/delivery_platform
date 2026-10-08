@@ -67,11 +67,11 @@ export default function RiderProfile() {
           {(user.firstName?.[0] ?? "R").toUpperCase()}
           {(user.lastName?.[0] ?? "").toUpperCase()}
         </span>
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight text-ink">
+        <div className="min-w-0">
+          <h1 className="truncate text-xl font-semibold tracking-tight text-ink">
             {user.firstName} {user.lastName}
           </h1>
-          <p className="mt-0.5 text-sm text-muted">{user.email}</p>
+          <p className="mt-0.5 truncate text-sm text-muted">{user.email}</p>
         </div>
       </div>
 

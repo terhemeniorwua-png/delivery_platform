@@ -96,7 +96,7 @@ export default function AdminDashboard() {
       </section>
 
       {/* --- Key statistics (aggregated on the backend) --- */}
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Total customers" value={stats.totalCustomers} />
         <StatCard label="Total riders" value={stats.totalRiders} tone="success" />
         <StatCard
@@ -152,7 +152,7 @@ export default function AdminDashboard() {
         </div>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         {/* --- Recent orders (11.6) --- */}
         <Section
           title="Recent orders"

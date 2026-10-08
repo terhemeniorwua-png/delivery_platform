@@ -121,7 +121,7 @@ export default function OrderDetailView({ orderId }) {
 
   if (loading) {
     return (
-      <div className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6">
+<div className="mx-auto w-full max-w-4xl py-4">
         <ProductCardSkeletons count={2} />
       </div>
     );
@@ -129,7 +129,7 @@ export default function OrderDetailView({ orderId }) {
 
   if (error || !order) {
     return (
-      <div className="mx-auto w-full max-w-2xl px-4 py-16 sm:px-6">
+      <div className="mx-auto w-full max-w-2xl py-16">
         <ErrorState
           title="Order not found"
           message={error ? getApiErrorMessage(error) : "This order does not exist."}
@@ -151,7 +151,7 @@ export default function OrderDetailView({ orderId }) {
   const isCancelled = order.status === "CANCELLED";
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6">
+    <div className="mx-auto w-full max-w-4xl py-4">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <Link
