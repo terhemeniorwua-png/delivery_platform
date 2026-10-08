@@ -2,6 +2,7 @@ const { Op } = require('sequelize');
 const { User, Order } = require('../models');
 const { notFound, conflict } = require('../utils/errors');
 const { success } = require('../utils/response');
+const adminService = require('../services/admin.service');
 
 async function listUsers(query) {
   const where = {};
@@ -24,7 +25,7 @@ async function listUsers(query) {
   });
 
   return {
-    users: rows,
+    users: rows.map((u) => u.toPublicJSON()),
     pagination: {
       page: query.page,
       limit: query.limit,
@@ -61,7 +62,28 @@ async function list(req, res) {
 
 async function updateStatus(req, res) {
   const user = await updateUserStatus(req.params.id, req.body.status);
-  return success(res, 'User status updated', { user });
+  return success(res, 'User status updated', { user: user.toPublicJSON() });
 }
 
-module.exports = { list, updateStatus };
+async function createAdministrator(req, res) {
+  const user = await adminService.createAdministrator(req.body);
+  const administrators = await adminService.administratorStats();
+  return success(res, 'Administrator created', { user: user.toPublicJSON(), administrators }, 201);
+}
+
+async function updateRole(req, res) {
+  const user = await adminService.changeUserRole(req.params.id, req.body.role);
+  const administrators = await adminService.administratorStats();
+  return success(res, 'User role updated', { user: user.toPublicJSON(), administrators });
+}
+
+async function administrators(req, res) {
+  const stats = await adminService.administratorStats();
+  const users = await User.findAll({
+    where: { role: 'ADMIN' },
+    order: [['createdAt', 'ASC']],
+  });
+  return success(res, 'Administrators fetched', { ...stats, users: users.map((u) => u.toPublicJSON()) });
+}
+
+module.exports = { list, updateStatus, createAdministrator, updateRole, administrators };

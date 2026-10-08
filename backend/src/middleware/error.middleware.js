@@ -26,6 +26,12 @@ function errorHandler(err, req, res, next) {
     return failure(res, 409, 'A record with those details already exists');
   }
 
+  // enforce_max_admins() database trigger — the database-level guard rails for
+  // the maximum-5-administrators and never-remove-the-last-admin rules.
+  if (err.name === 'SequelizeDatabaseError' && /administrators? (reached|must remain)/.test(err.message)) {
+    return failure(res, 409, err.message);
+  }
+
   if (err.name === 'SequelizeForeignKeyConstraintError') {
     return failure(res, 409, 'The related record is missing or still in use');
   }

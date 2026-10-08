@@ -1,7 +1,8 @@
 'use strict';
 
 const bcrypt = require('bcrypt');
-const { User, Rider } = require('../src/models');
+const { User, Rider, sequelize } = require('../src/models');
+const { MAX_ADMINS } = require('../src/constants/status');
 
 const DEMO_PASSWORD = 'Password123!';
 const hash = () => bcrypt.hashSync(DEMO_PASSWORD, 10);
@@ -64,11 +65,17 @@ const RIDERS = [
 
 module.exports = {
   async up() {
+    // Never let the seeder itself push the administrator count past the limit.
+    const [[{ count: adminCount }]] = await sequelize.query(
+      "SELECT COUNT(*)::int AS count FROM users WHERE role = 'ADMIN'"
+    );
+
     for (const seed of USERS) {
       const existing = await User.scope('withPassword').findOne({ where: { email: seed.email } });
-      if (!existing) {
-        await User.create({ ...seed, password: hash() });
-      }
+      if (existing) continue;
+      if (seed.role === 'ADMIN' && adminCount >= MAX_ADMINS) continue;
+      await User.create({ ...seed, password: hash() });
+      if (seed.role === 'ADMIN') adminCount += 1;
     }
 
     for (const seed of RIDERS) {

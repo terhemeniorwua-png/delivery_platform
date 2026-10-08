@@ -77,6 +77,7 @@ module.exports = {
   email,
   password,
   phone,
+  name,
   registerSchema,
   loginSchema,
   updateProfileSchema,

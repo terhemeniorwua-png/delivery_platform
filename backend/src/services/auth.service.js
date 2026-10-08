@@ -56,6 +56,11 @@ async function getProfile(userId) {
 async function updateProfile(userId, input) {
   const user = await User.findByPk(userId);
   if (!user) throw unauthorized('Account no longer exists');
+  // updateProfileSchema only whitelists firstName/lastName/phone; this guard
+  // makes it impossible for a role/status to slip in if the schema ever grows.
+  if ('role' in input || 'status' in input) {
+    throw forbidden('Your role and account status cannot be changed here');
+  }
   await user.update(input);
   return user;
 }

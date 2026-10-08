@@ -64,7 +64,7 @@ Seeded users (password `Password123!` — development data only):
 ### Auth
 | Method | Path                    | Role         | Description                |
 | ------ | ----------------------- | ------------ | -------------------------- |
-| POST   | /api/auth/register      | public       | Register a customer        |
+| POST   | /api/auth/register      | public       | Register a **customer** (`role` in the body is ignored — always `CUSTOMER`) |
 | POST   | /api/auth/login         | public       | Sign in, returns JWT       |
 | GET    | /api/auth/me            | any          | Current profile            |
 | PATCH  | /api/auth/me            | any          | Update name/phone          |
@@ -153,6 +153,9 @@ Seeded users (password `Password123!` — development data only):
 | ------ | ----------------------------- | ----- |
 | GET    | /api/admin/users              | ADMIN |
 | PATCH  | /api/admin/users/:id/status   | ADMIN (admin accounts and users with active orders are protected) |
+| PATCH  | /api/admin/users/:id/role     | ADMIN (promotions to `ADMIN` obey the 5-admin cap; the last `ADMIN` can never be demoted; `RIDER` targets are rejected — use rider management) |
+| GET    | /api/admin/administrators     | ADMIN (dashboard payload: `{ count, limit: 5, remaining, atLimit, users }`) |
+| POST   | /api/admin/administrators     | ADMIN (the **only** way to create an `ADMIN`; returns `409` at the cap) |
 
 ## Business rules
 
@@ -190,6 +193,20 @@ ASSIGNED → PICKED_UP → IN_TRANSIT → DELIVERED
 Cancelling restores stock, cancels an active delivery (freeing the rider),
 refunds `SUCCESSFUL` payments and fails `PENDING` ones.
 
+**Administrator limit (max 5)**:
+
+- Public registration is always `CUSTOMER`; `role` in the payload is stripped.
+- `ADMIN` accounts are created only via `POST /api/admin/administrators` and
+  promoted only via `PATCH /api/admin/users/:id/role` (both ADMIN-only).
+- The cap is enforced in three layers: `admin.service.js` (transaction +
+  `pg_advisory_xact_lock`, so concurrent requests cannot both pass the count
+  check), the `enforce_max_admins()` database trigger (rejects a 6th `ADMIN`
+  and the removal of the last one, even for direct SQL), and the seeders
+  (never seed past the cap). Violations return `409` with
+  `Maximum number of administrators reached. The platform can have a maximum of 5 administrators.`
+- Demoting an administrator frees a slot; admin deactivation remains blocked
+  (existing rule).
+
 ## Project structure
 
 ```
@@ -218,3 +235,7 @@ backend/
 - The error handler never leaks stack traces or database internals to clients.
 - TLS to PostgreSQL uses the CA file with `rejectUnauthorized: true`.
 - `helmet` sets secure HTTP headers; CORS is restricted to `FRONTEND_URL`.
+- Privileged roles: registration can only create `CUSTOMER`; `ADMIN` is capped
+  at 5 by the service layer, a database trigger and the seeders; role claims in
+  JWTs are re-read from the database on every request, so demotions and
+  suspensions apply immediately.
