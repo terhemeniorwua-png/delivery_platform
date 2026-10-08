@@ -14,9 +14,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Clothing Delivery Platform",
+  title: {
+    default: "Clothing Delivery Platform — Fashion delivered to your doorstep",
+    template: "%s | Clothing Delivery Platform",
+  },
   description:
-    "Shop clothing online with fast, tracked delivery — customers, riders and administrators in one platform.",
+    "Shop clothing for men, women and kids — everyday wear, traditional outfits, shoes and accessories, delivered to your doorstep by our riders.",
 };
 
 /**
