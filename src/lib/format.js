@@ -38,3 +38,19 @@ export function productCountLabel(count) {
   if (!count) return "No products";
   return `${count} product${count === 1 ? "" : "s"}`;
 }
+
+/**
+ * Flat delivery fee shown in cart/checkout summaries.
+ *
+ * The backend applies `DELIVERY_FEE` (backend/.env, default 1500) when an
+ * order is created and does not expose a fee-lookup endpoint yet — this
+ * mirrors the backend default so the preview matches the real total. The
+ * authoritative amount is always `order.deliveryFee` from POST /api/orders.
+ */
+export const DELIVERY_FEE = 1500;
+
+/** Cart subtotal + flat delivery fee (preview only — backend is authoritative). */
+export function checkoutTotals(subtotal) {
+  const sub = Number(subtotal) || 0;
+  return { subtotal: sub, deliveryFee: DELIVERY_FEE, total: sub + DELIVERY_FEE };
+}

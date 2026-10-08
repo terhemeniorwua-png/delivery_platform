@@ -25,3 +25,29 @@ export function buildQuery(current = {}, changes = {}) {
   const qs = params.toString();
   return qs ? `?${qs}` : "";
 }
+
+/**
+ * Safe post-login redirect target: only same-origin absolute paths
+ * ("/…"). Rejects protocol-relative ("//evil.com"), backslashes and
+ * absolute URLs so `?next=` can never leave the app.
+ */
+export function safeInternalPath(next, fallback = "/") {
+  if (
+    typeof next === "string" &&
+    next.startsWith("/") &&
+    !next.startsWith("//") &&
+    !next.startsWith("/\\") &&
+    !next.includes("\\")
+  ) {
+    return next;
+  }
+  return fallback;
+}
+
+/** Default home for a role (mirrors RoleGate's homeByRole map). */
+export function homeForRole(role) {
+  if (role === "ADMIN") return "/admin";
+  if (role === "RIDER") return "/rider";
+  if (role === "CUSTOMER") return "/customer";
+  return "/shop";
+}

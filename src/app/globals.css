@@ -27,6 +27,15 @@
   --color-error: #dc2626;
   --color-error-soft: #fef2f2;
 
+  /* warm sand (hero overlay + accents) */
+  --color-sand-50: #faf6ee;
+  --color-sand-100: #f5ecd9;
+  --color-sand-200: #ece0c4;
+  --color-sand-300: #e0cfa9;
+  --color-sand-400: #cbb584;
+  --color-sand-500: #b39a64;
+  --color-sand-600: #8a7048;
+
   /* typography */
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;

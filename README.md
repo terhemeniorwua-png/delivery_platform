@@ -8,9 +8,9 @@ administrators run the catalogue, orders and deliveries.
 deliveryPlatform/
 ├── src/            Next.js frontend (this repo root)
 │   ├── app/          App Router pages + route groups: (public), later (customer), (rider), (admin)
-│   ├── components/   ui/ (design system), layouts/ (shells), auth/ (route protection)
+│   ├── components/   ui/ (design system), layouts/ (shells), storefront/ (catalogue UI), auth/ (route protection)
 │   ├── context/      AuthContext — current user + role
-│   └── lib/          api.js — central API client
+│   └── lib/          api.js (API client), catalog.js (storefront fetchers), format.js (currency), url.js (query helpers)
 ├── backend/        Express 5 REST API (see backend/README.md for the full endpoint reference)
 ├── .env.example    Frontend environment template
 └── public/         Static assets
@@ -106,12 +106,37 @@ Hard rules enforced by the backend (frontend only reflects them):
 | Area     | Route group      | Layout                        | Access                        |
 | -------- | ---------------- | ----------------------------- | ----------------------------- |
 | Public   | `app/(public)`   | `PublicLayout` (header/footer)| everyone                      |
-| Customer | `app/(customer)` | `CustomerLayout` (Phase 2)    | `RoleGate` → CUSTOMER         |
-| Rider    | `app/(rider)`    | `RiderLayout` (Phase 2)       | `RoleGate` → RIDER            |
-| Admin    | `app/(admin)`    | `AdminLayout` (Phase 2)       | `RoleGate` → ADMIN            |
+| Customer | `app/(customer)` | `CustomerLayout` (later phase)| `RoleGate` → CUSTOMER         |
+| Rider    | `app/(rider)`    | `RiderLayout` (later phase)   | `RoleGate` → RIDER            |
+| Admin    | `app/(admin)`    | `AdminLayout` (later phase)   | `RoleGate` → ADMIN            |
 
 All dashboards share one `DashboardLayout` (sidebar + topbar, responsive) —
 navigation is passed in, never duplicated.
+
+## Public storefront (Phase 2)
+
+| Route                  | Data |
+| ---------------------- | ---- |
+| `/`                    | hero collage, category covers, featured products (`GET /categories`, `GET /products`), promo, how-it-works |
+| `/shop`                | search (`q`), category filter, min/max price, sort (newest/price_asc/price_desc/name), pagination — all via `GET /products` |
+| `/categories`          | `GET /categories` (real `productCount`, cover image derived from each category's first product) |
+| `/categories/[slug]`   | `GET /categories/:slug` + products, sort + pagination |
+| `/products/[id]`       | `GET /products/:idOrSlug` — gallery, size/colour variant picker with per-combo stock, discount badge, real `POST /cart/items` add-to-cart (signed-in only), related products |
+| `/about`, `/contact`   | static copy; contact form composes a mailto (no backend contact endpoint yet) |
+| `/cart`                | `GET /cart` — read-only (qty edit/checkout arrive with later phases) |
+| `/privacy`, `/terms`   | static |
+
+- Money is formatted by one central constant (`src/lib/format.js` — NGN/`₦`);
+  no currency value is scattered through components.
+- Header/nav is auth-aware (guest → Sign in/Register; customer → Orders;
+  rider/admin → their area) and the cart badge tracks the real `GET /cart`
+  count via the `cart:updated` event.
+- **Reserved links**: `/login`, `/register`, `/customer`, `/customer/orders`,
+  `/rider`, `/admin` are linked from the header but intentionally 404 until
+  their phases ship.
+- **Not faked, not available yet**: contact submission endpoint, popularity
+  sort, category cover images (derived client-side from product images),
+  wishlist, rider application flow.
 
 ## Backend API (summary)
 
@@ -140,7 +165,8 @@ The full endpoint table, request/response shapes and business rules live in
 
 ## Frontend status
 
-Phase 1 (foundation) is in place: design tokens + reusable UI components,
-public/dashboard layout shells, central API client, auth context and
-role-based route protection. Storefront, dashboards, checkout and the rider
-application UI arrive in later phases.
+Phase 1 (foundation) and Phase 2 (public website & storefront) are in place:
+design tokens + reusable UI components, layout shells, central API client,
+auth context, role-based route protection, and the full public catalogue
+experience described under **Public storefront (Phase 2)**. Dashboards,
+checkout, the rider application UI and account pages arrive in later phases.
