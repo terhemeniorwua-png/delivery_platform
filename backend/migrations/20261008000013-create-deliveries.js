@@ -3,16 +3,16 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('deliveries', {
-      id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
+      id: { type: Sequelize.UUID, defaultValue: Sequelize.UUIDV4, primaryKey: true },
       orderId: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         allowNull: false,
         references: { model: 'orders', key: 'id' },
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       },
       riderId: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         allowNull: false,
         references: { model: 'riders', key: 'id' },
         onDelete: 'RESTRICT',

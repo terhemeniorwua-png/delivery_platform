@@ -27,4 +27,16 @@ function toPositiveInt(value, fallback = 1) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
-module.exports = { generateOrderNumber, generateTransactionReference, slugify, toPositiveInt };
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isUuid(value) {
+  return typeof value === 'string' && UUID_PATTERN.test(value);
+}
+
+module.exports = {
+  generateOrderNumber,
+  generateTransactionReference,
+  slugify,
+  toPositiveInt,
+  isUuid,
+};

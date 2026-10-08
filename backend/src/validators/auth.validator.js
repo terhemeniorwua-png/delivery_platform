@@ -1,6 +1,6 @@
 const { z } = require('zod');
 
-const idParam = z.object({ id: z.coerce.number().int().positive() });
+const idParam = z.object({ id: z.uuid() });
 
 const email = z
   .string()

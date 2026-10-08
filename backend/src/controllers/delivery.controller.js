@@ -11,7 +11,7 @@ async function list(req, res) {
 }
 
 async function get(req, res) {
-  const delivery = await deliveryService.getDelivery(Number(req.params.id), req.user);
+  const delivery = await deliveryService.getDelivery(req.params.id, req.user);
   return success(res, 'Delivery fetched', { delivery });
 }
 
@@ -21,13 +21,13 @@ async function create(req, res) {
 }
 
 async function reassign(req, res) {
-  const delivery = await deliveryService.reassign(Number(req.params.id), req.body, req.user);
+  const delivery = await deliveryService.reassign(req.params.id, req.body, req.user);
   return success(res, 'Delivery reassigned', { delivery });
 }
 
 async function updateStatus(req, res) {
   const delivery = await deliveryService.transition(
-    Number(req.params.id),
+    req.params.id,
     { status: req.body.status, note: req.body.note },
     req.user
   );

@@ -4,8 +4,8 @@ const sequelize = require('../config/database');
 const Address = sequelize.define(
   'Address',
   {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    userId: { type: DataTypes.INTEGER, allowNull: false },
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    userId: { type: DataTypes.UUID, allowNull: false },
     label: { type: DataTypes.STRING(40), allowNull: false, defaultValue: 'Home' },
     recipientName: { type: DataTypes.STRING(120), allowNull: false },
     phone: { type: DataTypes.STRING(30), allowNull: false },

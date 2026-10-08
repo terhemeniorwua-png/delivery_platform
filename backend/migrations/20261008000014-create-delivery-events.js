@@ -3,16 +3,16 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('delivery_events', {
-      id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
+      id: { type: Sequelize.UUID, defaultValue: Sequelize.UUIDV4, primaryKey: true },
       deliveryId: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         allowNull: false,
         references: { model: 'deliveries', key: 'id' },
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       },
       actorId: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         allowNull: true,
         references: { model: 'users', key: 'id' },
         onDelete: 'SET NULL',

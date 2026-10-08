@@ -7,7 +7,7 @@ const controller = require('../controllers/product.controller');
 const v = require('../validators/product.validator');
 const { idParam } = require('../validators/auth.validator');
 
-const id = z.coerce.number().int().positive();
+const id = z.uuid();
 const variantParams = z.object({ id, variantId: id });
 const imageParams = z.object({ id, imageId: id });
 const stockParams = z.object({ variantId: id });

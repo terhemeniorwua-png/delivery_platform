@@ -5,9 +5,9 @@ const { DELIVERY_STATUSES } = require('../constants/status');
 const Delivery = sequelize.define(
   'Delivery',
   {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    orderId: { type: DataTypes.INTEGER, allowNull: false },
-    riderId: { type: DataTypes.INTEGER, allowNull: false },
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    orderId: { type: DataTypes.UUID, allowNull: false },
+    riderId: { type: DataTypes.UUID, allowNull: false },
     status: {
       type: DataTypes.ENUM(DELIVERY_STATUSES),
       allowNull: false,

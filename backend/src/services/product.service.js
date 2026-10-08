@@ -7,7 +7,7 @@ const {
   OrderItem,
 } = require('../models');
 const { notFound, conflict, badRequest } = require('../utils/errors');
-const { slugify } = require('../utils/helpers');
+const { slugify, isUuid } = require('../utils/helpers');
 
 const LIST_INCLUDES = [
   { model: Category, as: 'category', attributes: ['id', 'name', 'slug'] },
@@ -82,9 +82,8 @@ async function listProducts(query, { isAdmin = false } = {}) {
   }
 
   if (query.category !== undefined) {
-    const isNumeric = /^\d+$/.test(String(query.category));
     const category = await Category.findOne({
-      where: isNumeric ? { id: Number(query.category) } : { slug: query.category },
+      where: isUuid(query.category) ? { id: query.category } : { slug: query.category },
     });
     if (!category) throw notFound('Category not found');
     where.categoryId = category.id;
@@ -122,9 +121,8 @@ async function listProducts(query, { isAdmin = false } = {}) {
 }
 
 async function getProduct(idOrSlug, { isAdmin = false } = {}) {
-  const isNumeric = /^\d+$/.test(String(idOrSlug));
   const product = await Product.findOne({
-    where: isNumeric ? { id: Number(idOrSlug) } : { slug: idOrSlug },
+    where: isUuid(idOrSlug) ? { id: idOrSlug } : { slug: idOrSlug },
     include: LIST_INCLUDES,
   });
   if (!product) throw notFound('Product not found');

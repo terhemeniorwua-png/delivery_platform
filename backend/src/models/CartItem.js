@@ -4,9 +4,9 @@ const sequelize = require('../config/database');
 const CartItem = sequelize.define(
   'CartItem',
   {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    cartId: { type: DataTypes.INTEGER, allowNull: false },
-    productVariantId: { type: DataTypes.INTEGER, allowNull: false },
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    cartId: { type: DataTypes.UUID, allowNull: false },
+    productVariantId: { type: DataTypes.UUID, allowNull: false },
     quantity: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
   },
   {

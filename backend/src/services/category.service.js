@@ -1,6 +1,6 @@
 const { Category, Product } = require('../models');
 const { notFound, conflict } = require('../utils/errors');
-const { slugify } = require('../utils/helpers');
+const { slugify, isUuid } = require('../utils/helpers');
 
 async function listCategories() {
   const categories = await Category.findAll({
@@ -24,7 +24,7 @@ async function listCategories() {
 }
 
 async function getCategory(idOrSlug) {
-  const where = Number.isInteger(Number(idOrSlug)) ? { id: Number(idOrSlug) } : { slug: idOrSlug };
+  const where = isUuid(idOrSlug) ? { id: idOrSlug } : { slug: idOrSlug };
   const category = await Category.findOne({ where });
   if (!category) throw notFound('Category not found');
   return category;

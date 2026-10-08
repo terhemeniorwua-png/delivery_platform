@@ -22,12 +22,12 @@ async function list(req, res) {
 }
 
 async function get(req, res) {
-  const payment = await paymentService.getPayment(Number(req.params.id), req.user);
+  const payment = await paymentService.getPayment(req.params.id, req.user);
   return success(res, 'Payment fetched', { payment });
 }
 
 async function updateStatus(req, res) {
-  const payment = await paymentService.transitionPayment(Number(req.params.id), req.body.status);
+  const payment = await paymentService.transitionPayment(req.params.id, req.body.status);
   return success(res, 'Payment status updated', { payment });
 }
 

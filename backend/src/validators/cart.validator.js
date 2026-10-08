@@ -1,7 +1,7 @@
 const { z } = require('zod');
 
 const addItemSchema = z.object({
-  productVariantId: z.coerce.number().int().positive(),
+  productVariantId: z.uuid(),
   quantity: z.number().int().min(1).max(100).default(1),
 });
 

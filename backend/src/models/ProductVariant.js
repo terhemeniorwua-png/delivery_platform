@@ -4,8 +4,8 @@ const sequelize = require('../config/database');
 const ProductVariant = sequelize.define(
   'ProductVariant',
   {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    productId: { type: DataTypes.INTEGER, allowNull: false },
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    productId: { type: DataTypes.UUID, allowNull: false },
     size: { type: DataTypes.STRING(20), allowNull: false },
     color: { type: DataTypes.STRING(40), allowNull: false },
     sku: { type: DataTypes.STRING(60), allowNull: false, unique: true },

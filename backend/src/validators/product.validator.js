@@ -8,7 +8,7 @@ const paginationQuery = z.object({
 
 const productListQuery = paginationQuery.extend({
   search: z.string().trim().min(1).max(120).optional(),
-  category: z.union([z.string().trim().min(1), z.coerce.number().int().positive()]).optional(),
+  category: z.string().trim().min(1).optional(),
   brand: z.string().trim().min(1).max(80).optional(),
   status: z.enum(PRODUCT_STATUSES).optional(),
   minPrice: z.coerce.number().min(0).optional(),
@@ -17,7 +17,7 @@ const productListQuery = paginationQuery.extend({
 });
 
 const createProductSchema = z.object({
-  categoryId: z.coerce.number().int().positive(),
+  categoryId: z.uuid(),
   name: z.string().trim().min(2).max(160),
   description: z.string().trim().min(10).max(5000),
   price: z.number().positive().max(100000000),

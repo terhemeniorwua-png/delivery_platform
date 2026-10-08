@@ -4,9 +4,9 @@ const sequelize = require('../config/database');
 const DeliveryEvent = sequelize.define(
   'DeliveryEvent',
   {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    deliveryId: { type: DataTypes.INTEGER, allowNull: false },
-    actorId: { type: DataTypes.INTEGER, allowNull: true },
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    deliveryId: { type: DataTypes.UUID, allowNull: false },
+    actorId: { type: DataTypes.UUID, allowNull: true },
     previousStatus: { type: DataTypes.STRING(30), allowNull: true },
     newStatus: { type: DataTypes.STRING(30), allowNull: false },
     note: { type: DataTypes.TEXT, allowNull: true },

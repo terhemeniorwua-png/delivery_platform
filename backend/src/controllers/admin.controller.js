@@ -60,7 +60,7 @@ async function list(req, res) {
 }
 
 async function updateStatus(req, res) {
-  const user = await updateUserStatus(Number(req.params.id), req.body.status);
+  const user = await updateUserStatus(req.params.id, req.body.status);
   return success(res, 'User status updated', { user });
 }
 

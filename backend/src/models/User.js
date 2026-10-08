@@ -5,7 +5,7 @@ const { USER_ROLES, USER_STATUSES } = require('../constants/status');
 const User = sequelize.define(
   'User',
   {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     firstName: { type: DataTypes.STRING(60), allowNull: false },
     lastName: { type: DataTypes.STRING(60), allowNull: false },
     email: {

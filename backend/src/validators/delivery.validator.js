@@ -2,13 +2,13 @@ const { z } = require('zod');
 const { DELIVERY_STATUSES } = require('../constants/status');
 
 const createDeliverySchema = z.object({
-  orderId: z.coerce.number().int().positive(),
-  riderId: z.coerce.number().int().positive(),
+  orderId: z.uuid(),
+  riderId: z.uuid(),
   pickupTime: z.coerce.date().optional().nullable(),
 });
 
 const assignSchema = z.object({
-  riderId: z.coerce.number().int().positive(),
+  riderId: z.uuid(),
   pickupTime: z.coerce.date().optional().nullable(),
 });
 

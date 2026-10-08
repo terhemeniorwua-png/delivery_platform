@@ -5,8 +5,8 @@ const { PRODUCT_STATUSES } = require('../constants/status');
 const Product = sequelize.define(
   'Product',
   {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    categoryId: { type: DataTypes.INTEGER, allowNull: false },
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    categoryId: { type: DataTypes.UUID, allowNull: false },
     name: { type: DataTypes.STRING(160), allowNull: false },
     slug: { type: DataTypes.STRING(180), allowNull: false, unique: true },
     description: { type: DataTypes.TEXT, allowNull: false },

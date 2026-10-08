@@ -5,8 +5,8 @@ const { RIDER_AVAILABILITY, VEHICLE_TYPES } = require('../constants/status');
 const Rider = sequelize.define(
   'Rider',
   {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    userId: { type: DataTypes.INTEGER, allowNull: false, unique: true },
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    userId: { type: DataTypes.UUID, allowNull: false, unique: true },
     vehicleType: {
       type: DataTypes.ENUM(VEHICLE_TYPES),
       allowNull: false,

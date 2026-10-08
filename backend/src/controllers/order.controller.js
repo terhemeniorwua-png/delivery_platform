@@ -21,13 +21,13 @@ async function get(req, res) {
 }
 
 async function cancel(req, res) {
-  const order = await orderService.cancelOrder(Number(req.params.id), req.user);
+  const order = await orderService.cancelOrder(req.params.id, req.user);
   return success(res, 'Order cancelled', { order });
 }
 
 async function updateStatus(req, res) {
   const order = await orderService.updateOrderStatus(
-    Number(req.params.id),
+    req.params.id,
     req.body.status,
     req.user,
     req.body.note
@@ -36,7 +36,7 @@ async function updateStatus(req, res) {
 }
 
 async function assignDelivery(req, res) {
-  const delivery = await orderService.assignDelivery(Number(req.params.id), req.body, req.user);
+  const delivery = await orderService.assignDelivery(req.params.id, req.body, req.user);
   return success(res, 'Rider assigned to order', { delivery }, 201);
 }
 

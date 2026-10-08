@@ -3,16 +3,16 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('cart_items', {
-      id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
+      id: { type: Sequelize.UUID, defaultValue: Sequelize.UUIDV4, primaryKey: true },
       cartId: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         allowNull: false,
         references: { model: 'carts', key: 'id' },
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       },
       productVariantId: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         allowNull: false,
         references: { model: 'product_variants', key: 'id' },
         onDelete: 'CASCADE',

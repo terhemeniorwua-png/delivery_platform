@@ -13,10 +13,10 @@ const money = (field) => ({
 const OrderItem = sequelize.define(
   'OrderItem',
   {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    orderId: { type: DataTypes.INTEGER, allowNull: false },
-    productId: { type: DataTypes.INTEGER, allowNull: false },
-    productVariantId: { type: DataTypes.INTEGER, allowNull: false },
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    orderId: { type: DataTypes.UUID, allowNull: false },
+    productId: { type: DataTypes.UUID, allowNull: false },
+    productVariantId: { type: DataTypes.UUID, allowNull: false },
     productName: { type: DataTypes.STRING(160), allowNull: false },
     size: { type: DataTypes.STRING(20), allowNull: false },
     color: { type: DataTypes.STRING(40), allowNull: false },

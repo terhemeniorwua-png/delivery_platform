@@ -15,9 +15,9 @@ const money = (field) => ({
 const Order = sequelize.define(
   'Order',
   {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    userId: { type: DataTypes.INTEGER, allowNull: false },
-    addressId: { type: DataTypes.INTEGER, allowNull: false },
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    userId: { type: DataTypes.UUID, allowNull: false },
+    addressId: { type: DataTypes.UUID, allowNull: false },
     orderNumber: { type: DataTypes.STRING(30), allowNull: false, unique: true },
     subtotal: { ...money('subtotal') },
     deliveryFee: { ...money('deliveryFee') },

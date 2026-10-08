@@ -5,8 +5,8 @@ const { PAYMENT_METHODS, PAYMENT_STATUSES } = require('../constants/status');
 const Payment = sequelize.define(
   'Payment',
   {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    orderId: { type: DataTypes.INTEGER, allowNull: false },
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    orderId: { type: DataTypes.UUID, allowNull: false },
     amount: {
       type: DataTypes.DECIMAL(12, 2),
       allowNull: false,
