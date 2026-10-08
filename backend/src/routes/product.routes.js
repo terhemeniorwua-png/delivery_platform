@@ -14,13 +14,15 @@ const stockParams = z.object({ variantId: id });
 
 const adminOnly = [authenticate, authorize('ADMIN')];
 
+// Admin catalogue (registered before the public :idOrSlug routes)
+router.get('/admin', ...adminOnly, validate({ query: v.productListQuery }), controller.listAdmin);
+router.get('/admin/:idOrSlug', ...adminOnly, controller.getAdmin);
+
 // Public catalogue
 router.get('/', validate({ query: v.productListQuery }), controller.list);
 router.get('/:idOrSlug', controller.get);
 
-// Admin catalogue
-router.get('/admin', ...adminOnly, validate({ query: v.productListQuery }), controller.listAdmin);
-router.get('/admin/:idOrSlug', ...adminOnly, controller.getAdmin);
+// Admin mutations
 router.post('/', ...adminOnly, validate({ body: v.createProductSchema }), controller.create);
 router.patch('/:id', ...adminOnly, validate({ params: idParam, body: v.updateProductSchema }), controller.update);
 router.delete('/:id', ...adminOnly, validate({ params: idParam }), controller.remove);
