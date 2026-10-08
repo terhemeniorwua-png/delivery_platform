@@ -1,6 +1,15 @@
 const USER_ROLES = ['CUSTOMER', 'RIDER', 'ADMIN'];
 const USER_STATUSES = ['ACTIVE', 'INACTIVE', 'SUSPENDED'];
 
+// Strict business rule: the platform can never contain more than MAX_ADMINS
+// users with role = ADMIN. Enforced in the admin service (transactions +
+// advisory lock), by a database trigger (migrations/...-enforce-max-admins.js)
+// and by the seeders.
+const MAX_ADMINS = 5;
+const ADMIN_LIMIT_MESSAGE =
+  'Maximum number of administrators reached. The platform can have a maximum of 5 administrators.';
+const LAST_ADMIN_MESSAGE = 'At least one administrator must remain';
+
 const PRODUCT_STATUSES = ['ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'];
 
 const ORDER_STATUSES = [
@@ -73,4 +82,7 @@ module.exports = {
   PAYMENT_TRANSITIONS,
   CUSTOMER_CANCELABLE_STATUSES,
   DELIVERY_STATUSES_CANCELABLE,
+  MAX_ADMINS,
+  ADMIN_LIMIT_MESSAGE,
+  LAST_ADMIN_MESSAGE,
 };
