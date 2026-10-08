@@ -6,17 +6,15 @@ const STORAGE_KEY = "skc.consent";
 
 function readConsent() {
   try {
-    return window.localStorage.getItem(STORAGE_KEY);
+    return window.sessionStorage.getItem(STORAGE_KEY);
   } catch {
     return null;
   }
 }
 
 function subscribe(callback) {
-  window.addEventListener("storage", callback);
   window.addEventListener("skc:consent", callback);
   return () => {
-    window.removeEventListener("storage", callback);
     window.removeEventListener("skc:consent", callback);
   };
 }
@@ -33,10 +31,12 @@ function getServerSnapshot() {
 /**
  * SKYClothe cookie-consent banner.
  *
- * Asks once on the first visit and persists the choice in localStorage —
- * it never touches the JWT / `cdp.token` auth storage or any cookies, and it
- * makes no network calls. Escape dismisses the banner for the current page
- * without recording a decision (it reappears next visit).
+ * Shows whenever the site is launched: the choice is remembered in
+ * sessionStorage only, so it reappears on every new browsing session (and is
+ * remembered across pages within the session). It never touches the JWT /
+ * `cdp.token` auth storage or any cookies, and it makes no network calls.
+ * Escape dismisses the banner for the current page without recording a
+ * decision (it reappears next launch).
  */
 export default function CookieConsent() {
   const consent = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
@@ -55,7 +55,7 @@ export default function CookieConsent() {
 
   function choose(value) {
     try {
-      window.localStorage.setItem(STORAGE_KEY, value);
+      window.sessionStorage.setItem(STORAGE_KEY, value);
     } catch {
       /* storage unavailable (private mode) — decision is per-session only */
     }
