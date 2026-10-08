@@ -61,7 +61,7 @@ async function refreshProductStockStatus(productId) {
 
 async function listProducts(query, { isAdmin = false } = {}) {
   const where = {};
-  if (query.status) where.status = query.status;
+  if (query.status && isAdmin) where.status = query.status;
   else if (!isAdmin) where.status = 'ACTIVE';
 
   if (query.brand) where.brand = { [Op.iLike]: `%${escapeLike(query.brand)}%` };

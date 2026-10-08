@@ -72,7 +72,7 @@ async function transitionPayment(paymentId, status) {
   return sequelize.transaction(async (t) => {
     const payment = await Payment.findOne({
       where: { id: paymentId },
-      include: [ORDER_INCLUDE],
+      include: [{ ...ORDER_INCLUDE, required: true }],
       lock: t.LOCK.UPDATE,
       transaction: t,
     });

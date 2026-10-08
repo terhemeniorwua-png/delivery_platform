@@ -67,7 +67,7 @@ async function activeDeliveryForOrder(orderId, transaction) {
 async function loadRiderForAssignment(riderId, transaction) {
   const rider = await Rider.findOne({
     where: { id: riderId },
-    include: [{ model: User, as: 'user' }],
+    include: [{ model: User, as: 'user', required: true }],
     lock: transaction ? transaction.LOCK.UPDATE : undefined,
     transaction,
   });
@@ -113,7 +113,7 @@ async function reassign(deliveryId, { riderId, pickupTime }, actor) {
   return sequelize.transaction(async (t) => {
     const delivery = await Delivery.findOne({
       where: { id: deliveryId },
-      include: [{ model: Order, as: 'order' }],
+      include: [{ model: Order, as: 'order', required: true }],
       lock: t.LOCK.UPDATE,
       transaction: t,
     });
@@ -192,7 +192,7 @@ async function transition(deliveryId, { status, note }, actor) {
   return sequelize.transaction(async (t) => {
     const delivery = await Delivery.findOne({
       where: { id: deliveryId },
-      include: [{ model: Order, as: 'order' }],
+      include: [{ model: Order, as: 'order', required: true }],
       lock: t.LOCK.UPDATE,
       transaction: t,
     });

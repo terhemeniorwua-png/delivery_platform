@@ -85,7 +85,7 @@ async function createOrder(userId, { addressId }) {
     );
     const variants = await ProductVariant.findAll({
       where: { id: variantIds },
-      include: [{ model: Product, as: 'product' }],
+      include: [{ model: Product, as: 'product', required: true }],
       order: [['id', 'ASC']],
       transaction: t,
       lock: t.LOCK.UPDATE,
