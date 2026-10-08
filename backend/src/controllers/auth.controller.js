@@ -31,9 +31,14 @@ async function forgotPassword(req, res) {
   return success(res, 'Reset code sent', { email: user.email, code, expiresAt });
 }
 
+async function verifyCode(req, res) {
+  const { email, expiresAt } = await authService.verifyResetCode(req.body);
+  return success(res, 'Code verified', { email, expiresAt });
+}
+
 async function resetPassword(req, res) {
   const user = await authService.resetPassword(req.body);
   return success(res, 'Password reset successfully', { email: user.email });
 }
 
-module.exports = { register, login, me, updateMe, changePassword, forgotPassword, resetPassword };
+module.exports = { register, login, me, updateMe, changePassword, forgotPassword, verifyCode, resetPassword };

@@ -11,15 +11,29 @@ import Logo from "@/components/branding/Logo";
 
 const CODE_RE = /^\d{6}$/;
 
+const STEP_COPY = {
+  email: {
+    hint: "Enter the email on your account and we\u2019ll send a 6-digit reset code.",
+    submit: "Send reset code",
+  },
+  code: {
+    hint: "Enter the 6-digit code we sent. If it\u2019s correct you\u2019ll be taken to the reset form.",
+    submit: "Verify code",
+  },
+  reset: {
+    hint: "Code verified. Choose a new password for your account.",
+    submit: "Reset password",
+  },
+};
+
 /**
- * Password-reset flow backed by POST /auth/forgot-password +
- * POST /auth/reset-password.
+ * Password-reset flow backed by the public endpoints:
+ *   POST /auth/forgot-password  (step: email)
+ *   POST /auth/verify-code      (step: code)   <- dedicated verification form
+ *   POST /auth/reset-password   (step: reset)
  *
- * 1. Enter email  -> backend writes a hashed 6-digit code to the
- *                   password_resets table and this demo returns the plain
- *                   code (no mailer yet) so it can be shown in an alert box.
- * 2. Enter the 6-digit code + new password. A wrong/expired code surfaces an
- *    unsuccessful alert and keeps the code field open for another attempt.
+ * The plain demo code is returned by forgot-password (no mailer yet) and is
+ * shown in an alert box so the flow can be completed.
  */
 export default function ForgotPasswordForm() {
   const router = useRouter();
@@ -56,8 +70,9 @@ export default function ForgotPasswordForm() {
       setStep("code");
       toast("Reset code sent", { type: "success" });
     } catch (err) {
-      setError(getApiErrorMessage(err));
-      toast(getApiErrorMessage(err), { type: "error" });
+      const message = getApiErrorMessage(err);
+      setError(message);
+      toast(message, { type: "error" });
     } finally {
       setSubmitting(false);
     }
@@ -65,15 +80,37 @@ export default function ForgotPasswordForm() {
 
   async function onSubmit(event) {
     event.preventDefault();
+    if (submitting) return;
+    resetError();
+
     if (step === "email") {
       await requestCode(email);
       return;
     }
 
-    if (submitting) return;
-    resetError();
+    if (step === "code") {
+      if (!CODE_RE.test(code.trim())) {
+        setFieldErrors({ code: "Enter the 6-digit code." });
+        return;
+      }
+      setSubmitting(true);
+      try {
+        await api.post("/auth/verify-code", { email: email.trim(), code: code.trim() }, { auth: false });
+        setStep("reset");
+        toast("Code verified — set a new password.", { type: "success" });
+      } catch (err) {
+        const message = getApiErrorMessage(err);
+        setError(message);
+        toast(message, { type: "error" });
+        setCode(""); // unsuccessful attempt -> enter the code again
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
+    // step === "reset"
     const errors = {};
-    if (!CODE_RE.test(code.trim())) errors.code = "Enter the 6-digit code.";
     if (!newPassword) errors.newPassword = "Enter a new password.";
     else if (!/^(?=.*[A-Za-z])(?=.*[0-9]).{8,}$/.test(newPassword)) {
       errors.newPassword = "At least 8 characters with a letter and a number.";
@@ -97,7 +134,10 @@ export default function ForgotPasswordForm() {
       const message = getApiErrorMessage(err);
       setError(message);
       toast(message, { type: "error" });
-      setCode(""); // unsuccessful attempt -> enter the code again
+      if (/(code|expired|verification|incorrect)/i.test(message)) {
+        setStep("code");
+        setCode(""); // code no longer usable -> verify again
+      }
     } finally {
       setSubmitting(false);
     }
@@ -110,11 +150,9 @@ export default function ForgotPasswordForm() {
       </div>
       <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
         <h1 className="text-2xl font-semibold tracking-tight text-ink">Reset your password</h1>
-        <p className="mt-1 text-sm text-muted">
-          Enter the email on your account and we&apos;ll send a 6-digit reset code.
-        </p>
+        <p className="mt-1 text-sm text-muted">{STEP_COPY[step].hint}</p>
 
-        {codeNotice ? (
+        {codeNotice && step !== "email" ? (
           <div role="alert" className="mt-6 rounded-lg border border-warning/30 bg-warning-soft px-4 py-3">
             <p className="font-medium text-warning">Your verification code</p>
             <p
@@ -124,8 +162,7 @@ export default function ForgotPasswordForm() {
               {codeNotice.code}
             </p>
             <p className="mt-1 text-xs text-muted">
-              No email is sent in this demo — enter the code above in the next step. It expires in
-              15 minutes.
+              No email is sent in this demo — write it down. It expires in 15 minutes.
             </p>
           </div>
         ) : null}
@@ -152,7 +189,9 @@ export default function ForgotPasswordForm() {
               error={fieldErrors.email}
               placeholder="you@example.com"
             />
-          ) : (
+          ) : null}
+
+          {step === "code" ? (
             <>
               <Input
                 label="Verification code"
@@ -167,6 +206,11 @@ export default function ForgotPasswordForm() {
                 error={fieldErrors.code}
                 placeholder="6-digit code"
               />
+            </>
+          ) : null}
+
+          {step === "reset" ? (
+            <>
               <Input
                 label="New password"
                 type="password"
@@ -189,33 +233,38 @@ export default function ForgotPasswordForm() {
                 error={fieldErrors.confirmPassword}
                 placeholder="Repeat the new password"
               />
-              <div className="flex items-center justify-between text-sm">
-                <button
-                  type="button"
-                  onClick={() => requestCode(email)}
-                  disabled={submitting}
-                  className="font-medium text-primary transition-colors hover:text-primary-hover disabled:opacity-50"
-                >
-                  Resend code
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    resetError();
-                    setCodeNotice(null);
-                    setStep("email");
-                    setCode("");
-                  }}
-                  className="text-muted transition-colors hover:text-ink"
-                >
-                  Use a different email
-                </button>
-              </div>
             </>
-          )}
+          ) : null}
+
+          {step !== "email" ? (
+            <div className="flex items-center justify-between text-sm">
+              <button
+                type="button"
+                onClick={() => requestCode(email)}
+                disabled={submitting}
+                className="font-medium text-primary transition-colors hover:text-primary-hover disabled:opacity-50"
+              >
+                Resend code
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  resetError();
+                  setCodeNotice(null);
+                  setStep("email");
+                  setCode("");
+                  setNewPassword("");
+                  setConfirmPassword("");
+                }}
+                className="text-muted transition-colors hover:text-ink"
+              >
+                Use a different email
+              </button>
+            </div>
+          ) : null}
 
           <Button type="submit" size="lg" fullWidth loading={submitting}>
-            {step === "email" ? "Send reset code" : "Reset password"}
+            {STEP_COPY[step].submit}
           </Button>
         </form>
 

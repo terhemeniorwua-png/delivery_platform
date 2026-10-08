@@ -61,6 +61,11 @@ const resetPasswordSchema = z.object({
   newPassword: password,
 });
 
+const verifyCodeSchema = z.object({
+  email,
+  code: z.string().trim().regex(/^\d{6}$/, 'Verification code must be exactly 6 digits'),
+});
+
 const addressSchema = z.object({
   label: z.string().trim().min(1).max(40).optional(),
   recipientName: z.string().trim().min(2).max(120),
@@ -93,6 +98,7 @@ module.exports = {
   updateProfileSchema,
   changePasswordSchema,
   forgotPasswordSchema,
+  verifyCodeSchema,
   resetPasswordSchema,
   addressSchema,
   addressUpdateSchema,

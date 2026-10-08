@@ -109,21 +109,39 @@ async function requestPasswordReset(email) {
   return { user, code, expiresAt };
 }
 
+async function findActiveReset(userId) {
+  return PasswordReset.findOne({
+    where: { userId, usedAt: null },
+    order: [['createdAt', 'DESC']],
+  });
+}
+
+async function validateResetCode(code, reset) {
+  if (!reset || reset.expiresAt.getTime() <= Date.now()) {
+    throw badRequest('This reset code has expired. Request a new one.');
+  }
+  const matches = await bcrypt.compare(String(code), reset.code);
+  if (!matches) throw badRequest('Incorrect verification code');
+}
+
+async function verifyResetCode({ email, code }) {
+  const normalized = String(email).trim().toLowerCase();
+  const user = await User.findOne({ where: { email: normalized } });
+  if (!user) throw notFound('No account found with this email');
+
+  const reset = await findActiveReset(user.id);
+  await validateResetCode(code, reset);
+
+  return { user, email: user.email, expiresAt: reset.expiresAt };
+}
+
 async function resetPassword({ email, code, newPassword }) {
   const normalized = String(email).trim().toLowerCase();
   const user = await User.scope('withPassword').findOne({ where: { email: normalized } });
   if (!user) throw notFound('No account found with this email');
 
-  const reset = await PasswordReset.findOne({
-    where: { userId: user.id, usedAt: null },
-    order: [['createdAt', 'DESC']],
-  });
-  if (!reset || reset.expiresAt.getTime() <= Date.now()) {
-    throw badRequest('This reset code has expired. Request a new one.');
-  }
-
-  const matches = await bcrypt.compare(String(code), reset.code);
-  if (!matches) throw badRequest('Incorrect verification code');
+  const reset = await findActiveReset(user.id);
+  await validateResetCode(code, reset);
 
   await user.update({ password: await bcrypt.hash(newPassword, SALT_ROUNDS) });
   await PasswordReset.update({ usedAt: new Date() }, { where: { userId: user.id, usedAt: null } });
@@ -138,5 +156,6 @@ module.exports = {
   updateProfile,
   changePassword,
   requestPasswordReset,
+  verifyResetCode,
   resetPassword,
 };
