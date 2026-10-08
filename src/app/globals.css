@@ -112,11 +112,45 @@ body {
 }
 
 .animate-delay-2 {
-  animation-delay: 0.18s;
+  animation-delay: 0.09s;
 }
 
 .animate-delay-3 {
   animation-delay: 0.27s;
+}
+
+/* Slow, endless product rail (home "Featured pieces"). The track holds two
+   identical copies; translating the track by -50% loops seamlessly. */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 55s linear infinite;
+  will-change: transform;
+}
+
+/* Softened edges where the rail meets the page background. */
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 6%,
+    black 94%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 6%,
+    black 94%,
+    transparent 100%
+  );
 }
 
 /* Respect reduced-motion preferences: keep state changes, drop movement. */

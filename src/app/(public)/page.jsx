@@ -1,7 +1,9 @@
 import Hero from "@/components/storefront/Hero";
 import SectionHeading from "@/components/storefront/SectionHeading";
 import CategoryCard from "@/components/storefront/CategoryCard";
+import ProductCard from "@/components/storefront/ProductCard";
 import ProductGridWithItems from "@/components/storefront/ProductGrid";
+import Marquee from "@/components/storefront/Marquee";
 import PromoBanner from "@/components/storefront/PromoBanner";
 import HowItWorks from "@/components/storefront/HowItWorks";
 import WhyUs from "@/components/storefront/WhyUs";
@@ -37,16 +39,15 @@ export default async function HomePage() {
   ]);
 
   const covers = coversByCategory(products);
-  const featured = products.slice(0, 8);
-  const heroProducts = products.filter((product) => primaryImage(product)).slice(0, 3);
+  const featured = products.slice(0, 10);
   const promoProduct =
     products.find((product) => product.category?.slug === "traditional-wear" && primaryImage(product)) ??
-    heroProducts[0] ??
+    products.find((product) => primaryImage(product)) ??
     null;
 
   return (
     <>
-      <Hero products={heroProducts} />
+      <Hero />
 
       <div className="space-y-14 py-12 sm:space-y-16 sm:py-16">
         {/* ------------------------------------------------- categories */}
@@ -83,14 +84,35 @@ export default async function HomePage() {
 
         {/* --------------------------------------------------- featured */}
         {products.length > 0 ? (
-          <section className="mx-auto w-full max-w-7xl px-4 sm:px-6">
-            <SectionHeading
-              eyebrow="Featured"
-              title="Featured pieces"
-              description="Fresh arrivals and customer favourites from our current catalogue."
-              action={{ href: "/shop", label: "View all" }}
-            />
-            <ProductGridWithItems products={featured} />
+          <section aria-labelledby="featured-heading" className="w-full">
+            <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
+              <SectionHeading
+                eyebrow="Featured"
+                title="Featured pieces"
+                description="Fresh arrivals and customer favourites — slowly scrolling past, straight from the live catalogue."
+                action={{ href: "/shop", label: "View all" }}
+              />
+            </div>
+
+            {featured.length >= 3 ? (
+              /* Endless rail: cards drift across the screen, pause on hover. */
+              <div className="mt-6">
+                <Marquee>
+                  {featured.map((product) => (
+                    <div
+                      key={product.id}
+                      className="w-[260px] shrink-0 sm:w-[300px] [&>article]:h-full"
+                    >
+                      <ProductCard product={product} />
+                    </div>
+                  ))}
+                </Marquee>
+              </div>
+            ) : (
+              <div className="mt-6">
+                <ProductGridWithItems products={featured} />
+              </div>
+            )}
           </section>
         ) : (
           <section className="mx-auto w-full max-w-7xl px-4 sm:px-6">

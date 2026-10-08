@@ -19,6 +19,7 @@ router.use('/cart', require('./cart.routes'));
 router.use('/orders', require('./order.routes'));
 router.use('/payments', require('./payment.routes'));
 router.use('/riders', require('./rider.routes'));
+router.use('/rider-applications', require('./riderApplication.routes'));
 router.use('/deliveries', require('./delivery.routes'));
 router.use('/admin', require('./admin.routes'));
 

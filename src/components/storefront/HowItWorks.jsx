@@ -46,38 +46,76 @@ const STEPS = [
   },
 ];
 
-/** "How delivery works" — clearly a clothing + delivery platform. */
+/** "How delivery works" — a clothing + delivery platform, in five steps. */
 export default function HowItWorks() {
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 sm:px-6" aria-labelledby="how-it-works-heading">
-      <div className="mb-8 max-w-2xl">
-        <p className="mb-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
-          How it works
-        </p>
-        <h2 id="how-it-works-heading" className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">
-          From closet to doorstep in five steps
-        </h2>
-      </div>
-
-      <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        {STEPS.map((step, index) => (
-          <li
-            key={step.title}
-            className="relative rounded-xl border border-border bg-surface p-5 shadow-sm"
+    <section
+      className="mx-auto w-full max-w-7xl px-4 sm:px-6"
+      aria-labelledby="how-it-works-heading"
+    >
+      <div className="rounded-3xl border border-sand-200/70 bg-gradient-to-b from-sand-50 via-sand-50/70 to-sand-100/30 px-4 py-12 sm:px-8 sm:py-14">
+        <div className="mx-auto mb-10 max-w-2xl text-center">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-primary">
+            How it works
+          </p>
+          <h2
+            id="how-it-works-heading"
+            className="text-xl font-semibold tracking-tight text-ink sm:text-2xl"
           >
-            <div className="flex items-center justify-between">
-              <span className="flex size-10 items-center justify-center rounded-lg bg-primary-soft text-primary">
-                {step.icon}
-              </span>
-              <span className="text-xs font-semibold text-muted">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-            </div>
-            <h3 className="mt-4 text-sm font-semibold text-ink">{step.title}</h3>
-            <p className="mt-1.5 text-sm leading-relaxed text-muted">{step.description}</p>
-          </li>
-        ))}
-      </ol>
+            From closet to doorstep in five steps
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-muted sm:text-base">
+            One flow, start to finish — browse, order, and watch it arrive.
+          </p>
+        </div>
+
+        <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {STEPS.map((step, index) => (
+            <li
+              key={step.title}
+              className="group relative rounded-2xl border border-border bg-surface p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg"
+            >
+              {/* connector to the next step (desktop) */}
+              {index < STEPS.length - 1 ? (
+                <span
+                  aria-hidden="true"
+                  className="absolute -right-3 top-1/2 z-10 hidden size-6 -translate-y-1/2 items-center justify-center rounded-full border border-sand-300 bg-surface text-sand-600 shadow-sm lg:flex"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className="size-3.5"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m9 6 6 6-6 6" />
+                  </svg>
+                </span>
+              ) : null}
+
+              <div className="flex items-start justify-between">
+                <span className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary-soft to-sand-100 text-primary transition-transform duration-200 group-hover:scale-105">
+                  {step.icon}
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="text-4xl font-semibold leading-none text-sand-300 transition-colors group-hover:text-sand-400"
+                >
+                  {index + 1}
+                </span>
+              </div>
+
+              <p className="mt-4 text-[11px] font-semibold uppercase tracking-widest text-primary">
+                Step {index + 1}
+              </p>
+              <h3 className="mt-1 text-sm font-semibold text-ink">{step.title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted">
+                {step.description}
+              </p>
+            </li>
+          ))}
+        </ol>
+      </div>
     </section>
   );
 }

@@ -13,6 +13,7 @@ const Order = require('./Order');
 const OrderItem = require('./OrderItem');
 const Payment = require('./Payment');
 const Rider = require('./Rider');
+const RiderApplication = require('./RiderApplication');
 const Delivery = require('./Delivery');
 const DeliveryEvent = require('./DeliveryEvent');
 
@@ -28,6 +29,9 @@ Order.belongsTo(User, { foreignKey: 'userId', as: 'customer' });
 
 User.hasOne(Rider, { foreignKey: 'userId', as: 'riderProfile', onDelete: 'CASCADE' });
 Rider.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+User.hasMany(RiderApplication, { foreignKey: 'userId', as: 'riderApplications', onDelete: 'CASCADE' });
+RiderApplication.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 // Catalog
 Category.hasMany(Product, { foreignKey: 'categoryId', as: 'products' });
@@ -82,6 +86,7 @@ module.exports = {
   OrderItem,
   Payment,
   Rider,
+  RiderApplication,
   Delivery,
   DeliveryEvent,
 };

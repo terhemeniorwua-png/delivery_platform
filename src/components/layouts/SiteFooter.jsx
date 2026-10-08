@@ -64,7 +64,7 @@ export default function SiteFooter() {
 
       <div className="border-t border-border">
         <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-2 px-4 py-5 text-xs text-muted sm:flex-row sm:px-6">
-          <p>&copy; {new Date().getFullYear()} Clothing Delivery Platform. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} SKYClothe Delivery Platform. All rights reserved.</p>
           <p>Clothing, delivered to your doorstep.</p>
         </div>
       </div>

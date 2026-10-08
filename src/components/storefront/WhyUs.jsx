@@ -37,32 +37,58 @@ const REASONS = [
   },
 ];
 
-/** Short trust section — claims kept modest and verifiable. */
+/** Dark trust band — claims kept modest and verifiable. */
 export default function WhyUs() {
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 sm:px-6" aria-labelledby="why-us-heading">
-      <div className="mb-8 max-w-2xl">
-        <p className="mb-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
-          Why shop with us
-        </p>
-        <h2 id="why-us-heading" className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">
-          Built around clothing and delivery
-        </h2>
-      </div>
+    <section
+      className="mx-auto w-full max-w-7xl px-4 sm:px-6"
+      aria-labelledby="why-us-heading"
+    >
+      <div className="relative isolate overflow-hidden rounded-3xl bg-ink px-5 py-12 sm:px-10 sm:py-14">
+        {/* warm accent glow */}
+        <div
+          aria-hidden="true"
+          className="absolute -right-16 -top-16 size-64 rounded-full bg-sand-400/15 blur-3xl"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute -bottom-20 -left-12 size-56 rounded-full bg-primary/20 blur-3xl"
+        />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {REASONS.map((reason) => (
-          <div
-            key={reason.title}
-            className="rounded-xl border border-border bg-surface p-5 shadow-sm"
+        <div className="relative mx-auto mb-10 max-w-2xl text-center">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-sand-400">
+            Why shop with us
+          </p>
+          <h2
+            id="why-us-heading"
+            className="text-xl font-semibold tracking-tight text-white sm:text-2xl"
           >
-            <span className="flex size-10 items-center justify-center rounded-lg bg-primary-soft text-primary">
-              {reason.icon}
-            </span>
-            <h3 className="mt-4 text-sm font-semibold text-ink">{reason.title}</h3>
-            <p className="mt-1.5 text-sm leading-relaxed text-muted">{reason.description}</p>
-          </div>
-        ))}
+            Built around clothing and delivery
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-sand-300/80 sm:text-base">
+            Everything on the platform exists to get the right piece onto your
+            doorstep — nothing more complicated than that.
+          </p>
+        </div>
+
+        <div className="relative grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {REASONS.map((reason) => (
+            <div
+              key={reason.title}
+              className="group rounded-2xl border border-white/10 bg-white/[0.06] p-6 backdrop-blur transition-all duration-200 hover:-translate-y-1 hover:border-sand-400/40 hover:bg-white/[0.1]"
+            >
+              <span className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-sand-400/25 to-primary/25 text-sand-300 transition-transform duration-200 group-hover:scale-105">
+                {reason.icon}
+              </span>
+              <h3 className="mt-4 text-sm font-semibold text-white">
+                {reason.title}
+              </h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-sand-300/75">
+                {reason.description}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
