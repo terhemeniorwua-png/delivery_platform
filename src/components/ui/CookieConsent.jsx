@@ -66,47 +66,50 @@ export default function CookieConsent() {
     <div
       role="region"
       aria-label="Cookie consent"
-      className="fixed inset-x-0 bottom-0 z-[55] flex justify-center px-4 pb-4 sm:pb-6"
+      className="fixed inset-x-0 bottom-0 z-[55]"
     >
-      <div className="animate-slide-up w-full max-w-lg rounded-2xl border border-border bg-surface p-5 shadow-2xl shadow-ink/15 sm:p-6">
-        <div className="flex items-start gap-3">
-          <span
-            aria-hidden="true"
-            className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" className="size-5">
-              <circle cx="12" cy="12" r="8.5" />
-              <circle cx="9" cy="10" r="0.5" fill="currentColor" />
-              <circle cx="13.5" cy="13.5" r="0.5" fill="currentColor" />
-              <circle cx="15" cy="9" r="0.5" fill="currentColor" />
-              <circle cx="9.5" cy="15.5" r="0.5" fill="currentColor" />
-            </svg>
-          </span>
+      <div className="animate-slide-up border-t border-border bg-surface py-3 shadow-2xl shadow-ink/15 sm:py-3.5">
+        <div className="mx-auto flex w-full max-w-7xl flex-row items-center justify-between gap-4 px-4 sm:px-6">
+          <div className="flex min-w-0 items-center gap-3">
+            <span
+              aria-hidden="true"
+              className="hidden size-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary sm:flex"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" className="size-5">
+                <circle cx="12" cy="12" r="8.5" />
+                <circle cx="9" cy="10" r="0.5" fill="currentColor" />
+                <circle cx="13.5" cy="13.5" r="0.5" fill="currentColor" />
+                <circle cx="15" cy="9" r="0.5" fill="currentColor" />
+                <circle cx="9.5" cy="15.5" r="0.5" fill="currentColor" />
+              </svg>
+            </span>
 
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-ink">We use cookies</p>
-            <p className="mt-1 text-sm leading-relaxed text-muted">
-              We use cookies to keep SKYClothe working properly and improve
-              your experience. Your sign-in and session data are never
-              affected by your choice here.
+            <p className="truncate text-sm text-ink">
+              <span className="font-semibold">We use cookies</span>
+              <span className="mx-2 text-muted">·</span>
+              <span className="text-muted">
+                We use cookies to keep SKYClothe working properly and improve
+                your experience. Your sign-in and session data are never
+                affected by your choice here.
+              </span>
             </p>
+          </div>
 
-            <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => choose("declined")}
-                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-background"
-              >
-                Decline
-              </button>
-              <button
-                type="button"
-                onClick={() => choose("accepted")}
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
-              >
-                Accept Cookies
-              </button>
-            </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={() => choose("declined")}
+              className="rounded-lg border border-border px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-background"
+            >
+              Decline
+            </button>
+            <button
+              type="button"
+              onClick={() => choose("accepted")}
+              className="rounded-lg bg-primary px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
+            >
+              Accept Cookies
+            </button>
           </div>
         </div>
       </div>
