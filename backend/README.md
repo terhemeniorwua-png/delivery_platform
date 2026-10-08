@@ -132,12 +132,13 @@ Seeded users (password `Password123!` — development data only):
 ### Riders
 | Method | Path                            | Role   |
 | ------ | ------------------------------- | ------ |
-| GET    | /api/riders                     | ADMIN  |
+| GET    | /api/riders                     | ADMIN  | List includes per-rider delivery counts (`activeDeliveries`, `completedDeliveries`, `cancelledDeliveries`, `totalDeliveries`) |
 | POST   | /api/riders                     | ADMIN  |
-| GET    | /api/riders/:id                 | ADMIN  |
+| GET    | /api/riders/:id                 | ADMIN  | Detail adds `deliveryStats: { active, delivered, cancelled, total }` |
 | PATCH  | /api/riders/:id                 | ADMIN  |
 | GET    | /api/riders/me/profile          | RIDER  |
-| PATCH  | /api/riders/me/availability     | RIDER  (`AVAILABLE` \| `OFFLINE`) |
+| PATCH  | /api/riders/me/availability     | RIDER  (`AVAILABLE` \| `OFFLINE`) — `OFFLINE` blocked with `409` while the rider has active deliveries |
+| GET    | /api/riders/me/dashboard        | RIDER  | `{ rider, stats, activeDelivery }` |
 
 ### Deliveries
 | Method | Path                          | Role          | Notes |
@@ -153,7 +154,8 @@ Seeded users (password `Password123!` — development data only):
 | ------ | -------------------------------------- | ----------------- | ----- |
 | POST   | /api/rider-applications                | CUSTOMER          | Creates a `PENDING` application. Does **not** change `users.role`. `409` if a live (non-rejected) application already exists |
 | GET    | /api/rider-applications/me             | CUSTOMER, RIDER   | The caller's latest application (or `null`) |
-| GET    | /api/rider-applications                | ADMIN             | Paginated list, optional `status` filter |
+| GET    | /api/rider-applications                | ADMIN             | Paginated list, optional `status` filter + `search` (name / phone / vehicle number) |
+| GET    | /api/rider-applications/:id            | ADMIN             | Single application with its applicant user |
 | PATCH  | /api/rider-applications/:id/approve    | ADMIN             | Transaction: `PENDING → APPROVED`, promote `CUSTOMER → RIDER`, create the `riders` row (`OFFLINE`), stamp `reviewedBy`/`reviewedAt` |
 | PATCH  | /api/rider-applications/:id/reject     | ADMIN             | `PENDING → REJECTED` + optional `reason`; the user stays `CUSTOMER` and may re-apply |
 
@@ -164,6 +166,7 @@ application returns `409`; the admin-only endpoints return `403` for others.
 ### Admin
 | Method | Path                          | Role  |
 | ------ | ----------------------------- | ----- |
+| GET    | /api/admin/dashboard           | ADMIN | Aggregate stats + administrator capacity + recent orders / applications / active deliveries (all computed server-side) |
 | GET    | /api/admin/users              | ADMIN |
 | PATCH  | /api/admin/users/:id/status   | ADMIN (admin accounts and users with active orders are protected) |
 | PATCH  | /api/admin/users/:id/role     | ADMIN (promotions to `ADMIN` obey the 5-admin cap; the last `ADMIN` can never be demoted; `RIDER` targets are rejected — use rider management) |
