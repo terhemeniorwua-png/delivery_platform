@@ -1,7 +1,7 @@
 import SiteHeader from "./SiteHeader";
 import SiteFooter from "./SiteFooter";
 import AnnouncementBar from "./AnnouncementBar";
-import { NavLinks, NavActions, CartButton } from "./SiteNav";
+import { NavLinks, NavActions, MobileMenuItems, CartButton } from "./SiteNav";
 
 /**
  * Shell for all public pages (home, shop, product, auth...).
@@ -15,7 +15,12 @@ export default function PublicLayout({ children }) {
   return (
     <div className="flex min-h-full flex-col">
       <AnnouncementBar />
-      <SiteHeader nav={<NavLinks />} actions={<NavActions />} trailing={<CartButton />} />
+      <SiteHeader
+        nav={<NavLinks />}
+        actions={<NavActions />}
+        menu={<MobileMenuItems />}
+        trailing={<CartButton />}
+      />
       <main className="flex-1">{children}</main>
       <SiteFooter />
     </div>

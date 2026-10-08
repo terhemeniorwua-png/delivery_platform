@@ -255,3 +255,87 @@ export function NavActions() {
     </>
   );
 }
+
+/**
+ * Mobile drawer list, rendered AFTER the nav links so account actions sit at
+ * the bottom of the menu. Deliberately has no search box and no cart — the
+ * visible cart button already lives in the header row on mobile. For
+ * visitors, "Sign in" and "Register" are therefore the last two items.
+ */
+export function MobileMenuItems() {
+  const pathname = usePathname();
+  const { user, loading, isAuthenticated, logout } = useAuth();
+
+  if (loading) {
+    return (
+      <span
+        aria-hidden="true"
+        className="h-8 w-24 animate-pulse rounded-lg bg-border"
+        title="Loading account"
+      />
+    );
+  }
+
+  if (!isAuthenticated) {
+    const backTo =
+      pathname && pathname !== "/login" && pathname !== "/register" && pathname !== "/"
+        ? `?next=${encodeURIComponent(pathname)}`
+        : "";
+    return (
+      <>
+        <Link
+          href={`/login${backTo}`}
+          className="rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-background"
+        >
+          Sign in
+        </Link>
+        <Link
+          href={`/register${backTo}`}
+          className="rounded-lg bg-primary px-3 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-primary-hover"
+        >
+          Register
+        </Link>
+      </>
+    );
+  }
+
+  const roleHome =
+    user.role === "ADMIN" ? "/admin" : user.role === "RIDER" ? "/rider" : "/customer";
+  const dashboardLabel =
+    user.role === "ADMIN" ? "Dashboard" : user.role === "RIDER" ? "Rider app" : null;
+
+  return (
+    <>
+      {user.role === "CUSTOMER" ? (
+        <Link
+          href="/customer/orders"
+          className="rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-background"
+        >
+          My orders
+        </Link>
+      ) : null}
+      {dashboardLabel ? (
+        <Link
+          href={roleHome}
+          className="rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-background"
+        >
+          {dashboardLabel}
+        </Link>
+      ) : null}
+      <Link
+        href={roleHome}
+        className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-background"
+      >
+        <InitialsAvatar user={user} />
+        <span className="truncate">{user.firstName} {user.lastName}</span>
+      </Link>
+      <button
+        type="button"
+        onClick={logout}
+        className="rounded-lg px-3 py-2.5 text-left text-sm font-medium text-muted transition-colors hover:bg-background hover:text-error"
+      >
+        Sign out
+      </button>
+    </>
+  );
+}

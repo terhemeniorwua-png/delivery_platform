@@ -10,11 +10,14 @@ import Logo from "@/components/branding/Logo";
  *
  * Slots:
  *   nav      — centre links (desktop; also shown inside the mobile drawer)
- *   actions  — right-side actions (desktop; also inside the drawer)
+ *   actions  — right-side actions (desktop only)
+ *   menu     — mobile-drawer list shown BELOW the nav links (auth actions;
+ *              intentionally has no cart/search — the mobile cart lives in
+ *              the header row)
  *   trailing — always-visible mobile-only slot left of the menu button
  *              (used for the cart button: Logo / Cart / Menu on mobile)
  */
-export default function SiteHeader({ nav = null, actions = null, trailing = null }) {
+export default function SiteHeader({ nav = null, actions = null, menu = null, trailing = null }) {
   // The drawer is "open for the pathname it was opened on" — changing route
   // closes it automatically, without an effect.
   const [openedFor, setOpenedFor] = useState(null);
@@ -69,8 +72,12 @@ export default function SiteHeader({ nav = null, actions = null, trailing = null
             if (event.target.closest("a")) setOpenedFor(null);
           }}
         >
-          <div className="mb-3">{actions ? <div className="flex flex-col gap-2">{actions}</div> : null}</div>
-          {nav ? <div className="flex flex-col gap-1 border-t border-border pt-3">{nav}</div> : null}
+          {nav ? <div className="flex flex-col gap-1">{nav}</div> : null}
+          {menu || actions ? (
+            <div className="mt-2 flex flex-col gap-1 border-t border-border pt-2">
+              {menu || actions}
+            </div>
+          ) : null}
         </div>
       ) : null}
     </header>
