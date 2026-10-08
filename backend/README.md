@@ -148,6 +148,19 @@ Seeded users (password `Password123!` — development data only):
 | PATCH  | /api/deliveries/:id/reassign  | ADMIN         | Only while `PENDING`/`ASSIGNED` |
 | PATCH  | /api/deliveries/:id/status    | ADMIN, RIDER  | Riders only on their own delivery |
 
+### Rider applications
+| Method | Path                                   | Role              | Notes |
+| ------ | -------------------------------------- | ----------------- | ----- |
+| POST   | /api/rider-applications                | CUSTOMER          | Creates a `PENDING` application. Does **not** change `users.role`. `409` if a live (non-rejected) application already exists |
+| GET    | /api/rider-applications/me             | CUSTOMER, RIDER   | The caller's latest application (or `null`) |
+| GET    | /api/rider-applications                | ADMIN             | Paginated list, optional `status` filter |
+| PATCH  | /api/rider-applications/:id/approve    | ADMIN             | Transaction: `PENDING → APPROVED`, promote `CUSTOMER → RIDER`, create the `riders` row (`OFFLINE`), stamp `reviewedBy`/`reviewedAt` |
+| PATCH  | /api/rider-applications/:id/reject     | ADMIN             | `PENDING → REJECTED` + optional `reason`; the user stays `CUSTOMER` and may re-apply |
+
+**Role rule:** submitting or being rejected never changes a user's role.
+Only admin approval promotes `CUSTOMER → RIDER`. Approving a non-pending
+application returns `409`; the admin-only endpoints return `403` for others.
+
 ### Admin
 | Method | Path                          | Role  |
 | ------ | ----------------------------- | ----- |

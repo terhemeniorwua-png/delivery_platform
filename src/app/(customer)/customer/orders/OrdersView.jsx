@@ -47,7 +47,6 @@ export default function OrdersView({ current = {} }) {
     : "";
   const search = current.search ?? "";
 
-  const [searchDraft, setSearchDraft] = useState(search);
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [attempt, setAttempt] = useState(0);
@@ -56,10 +55,13 @@ export default function OrdersView({ current = {} }) {
   // Adjusting state during render is the sanctioned alternative to an
   // effect-driven setState (which would trigger a cascading render).
   const [searchDraft, setSearchDraft] = useState(search);
+  const [lastSearch, setLastSearch] = useState(search);
   if (search !== lastSearch) {
     setLastSearch(search);
     setSearchDraft(search);
   }
+
+  const requestKey = `${page}|${status}|${search}`;
 
   useEffect(() => {
     let cancelled = false;
@@ -67,7 +69,7 @@ export default function OrdersView({ current = {} }) {
       .get("/orders", { query: { page, limit: PAGE_SIZE, status, search } })
       .then((result) => {
         if (cancelled) return;
-        setData({ ...result, forPage: page });
+        setData({ ...result, forKey: requestKey });
         setError(null);
       })
       .catch((err) => {
@@ -77,7 +79,7 @@ export default function OrdersView({ current = {} }) {
     return () => {
       cancelled = true;
     };
-  }, [page, status, search, attempt]);
+  }, [page, status, search, requestKey, attempt]);
 
   function navigate(changes) {
     startTransition(() => {
@@ -99,7 +101,7 @@ export default function OrdersView({ current = {} }) {
 
   const filtered = Boolean(status || search);
   // Skeleton while the first page loads, and while a new page is in flight.
-  const loading = (!data || data.forPage !== page) && !error;
+  const loading = (!data || data.forKey !== requestKey) && !error;
 
   return (
     <div>

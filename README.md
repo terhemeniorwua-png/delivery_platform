@@ -143,9 +143,12 @@ navigation is passed in, never duplicated.
 | Route                        | Data / behaviour |
 | ---------------------------- | ---------------- |
 | `/login`, `/register`        | `POST /auth/login`, `POST /auth/register` (server shells + client forms; `?next=` returns you to the page you came from, validated against open redirects and never pointing back at an auth screen) |
-| `/customer`                  | dashboard (`GET /orders {limit:5}`) — greeting, totals, recent orders; `/customer/dashboard` redirects here |
-| `/customer/orders`           | paginated own-order list (`GET /orders`) |
-| `/customer/orders/[id]`      | order detail (`GET /orders/:id`) — items, totals, address, payments; two-step cancel button (`POST /orders/:id/cancel`) while PENDING/CONFIRMED |
+| `/customer`                  | dashboard (`GET /orders {limit:5}`) — greeting, totals, active-order banner, rider-application card, recent orders; `/customer/dashboard` redirects here |
+| `/customer/orders`           | paginated own-order list (`GET /orders`) with server-side status filter pills (`?status=`) and order-number search (`?search=`), plus payment method/status and delivery status per order |
+| `/customer/orders/[id]`      | order detail (`GET /orders/:id`) — progress timeline, best-effort item images, "buy again" per item (`POST /cart/items`), delivery status + rider, totals, address, payments; cancel via confirmation modal (`POST /orders/:id/cancel`) while PENDING/CONFIRMED |
+| `/customer/profile`          | account details (`PATCH /auth/me`) and password change (`PATCH /auth/password`) |
+| `/customer/become-rider`     | rider-application form (`POST /rider-applications`) + status states pending/approved/rejected (`GET /rider-applications/me`) |
+| `/rider`                     | approved-rider landing placeholder (full rider dashboard is a later phase) |
 | `/checkout`                  | address picker (`GET /addresses`) + add-address modal (`POST /addresses`), payment method (CASH/CARD/TRANSFER), sticky summary. `POST /orders {addressId}` → `POST /payments {method}` → redirect to the success screen; payment failure is reported honestly instead of hidden |
 | `/checkout/success`          | confirmation screen (`GET /orders/:id`) — order number, status, totals, payment state |
 
@@ -161,6 +164,46 @@ Notes:
 - Backend fix shipped with this phase: cart routes registered `/:itemId`
   while validating `{id}`, making `PATCH`/`DELETE /api/cart/items/:id`
   always 400 — the param is now `:id` end-to-end.
+
+## Customer orders & rider applications (Phases 7–8)
+
+Phase 7 upgraded the customer order experience and Phase 8 added the
+customer → rider application workflow.
+
+**Orders (Phase 7)**
+
+- List: server-side status filter (`?status=`) and order-number search
+  (`?search=`) — both accepted by `GET /api/orders` and kept in the URL so
+  links are shareable and pagination preserves them.
+- Detail: a progress timeline derived from `ORDER_TRANSITIONS`
+  (placed → confirmed → processing → ready → out for delivery → delivered).
+  Cancelled orders show a cancellation notice instead of a timeline.
+- Delivery card: delivery status plus the assigned rider's name and vehicle
+  (`vehicleType · vehicleNumber`). Rider phone numbers are intentionally not
+  surfaced.
+- Cancel now uses the shared `Modal` for confirmation; "Buy again" re-adds a
+  line from its `productVariantId`. Item images are best-effort (fetched from
+  `GET /products/:id`); **prices always come from the order-item snapshot**,
+  never current product prices.
+- Orders are owner-scoped server-side — other customers' IDs return 404.
+
+**Rider applications (Phase 8)**
+
+- Backend: new `rider_applications` table + `/api/rider-applications` routes
+  (see [`backend/README.md`](backend/README.md)). Submitting **never** changes
+  `users.role` — it stays `CUSTOMER` with status `PENDING`. Only an admin
+  `PATCH /:id/approve` promotes `CUSTOMER → RIDER` in one transaction that also
+  creates the `riders` row (availability `OFFLINE`). Rejection keeps the user a
+  `CUSTOMER`, records a reason, and allows re-application.
+- One live application per customer: a duplicate submission returns `409`.
+  Customers get `403` on the admin-only approve/reject endpoints.
+- Frontend: `/customer/become-rider` renders the correct state (form / under
+  review / approved / rejected + reapply). The customer sidebar adapts
+  ("Become a rider" ↔ "Rider application"), with Profile, Cart and Logout.
+- Document uploads are **not** implemented — the backend has no storage
+  layer yet (only if/when the backend supports it).
+- `/rider` is a minimal landing placeholder so newly-approved riders are not
+  dead-ended; the full rider dashboard remains a later phase.
 
 ## Backend API (summary)
 
@@ -178,23 +221,17 @@ The full endpoint table, request/response shapes and business rules live in
 | Orders         | `/api/orders*`                | checkout, cancel, admin status + rider assignment |
 | Payments       | `/api/payments*`              | CASH / CARD / TRANSFER, amount mirrors order total |
 | Riders         | `/api/riders*`                | rider self-service + admin management |
+| Rider apps     | `/api/rider-applications*`    | customer apply; admin approve/reject (CUSTOMER → RIDER) |
 | Deliveries     | `/api/deliveries*`            | scoped lists, assign, status transitions |
 | Admin          | `/api/admin/*`                | users, roles, administrators (max 5) |
 
-**Future endpoints** (planned, not implemented — do not call yet):
-
-- `POST /api/rider-applications` — customer submits a rider application
-- `GET /api/rider-applications`, `PATCH /api/rider-applications/:id/approve|reject`
-  — admin approval workflow that promotes an approved applicant to RIDER
-
 ## Frontend status
 
-Phase 1 (foundation), Phase 2 (public website & storefront), Phase 5
-(product catalog & shopping) and Phase 6 (cart & checkout) are in place:
-design tokens + reusable UI components, layout shells, central API client,
-auth context, role-based route protection, the full public catalogue
-experience, interactive cart, address/payment checkout with order
-confirmation, and the customer account area (dashboard, order list, order
-detail with cancel). The hero on `/` is a full-bleed background image under
-a warm-sand overlay. Rider/admin dashboards and the rider application UI
+Phases 1, 2, 5, 6, 7 and 8 are in place: design tokens + reusable UI
+components, layout shells, central API client, auth context, role-based route
+protection, the full public catalogue experience, interactive cart,
+address/payment checkout with order confirmation, the customer account area
+(dashboard, filterable order list, order detail with timeline and cancel),
+profile management, and the rider-application flow. The hero on `/` is a
+full-bleed image slideshow under a warm-sand overlay. Rider/admin dashboards
 arrive in later phases.
