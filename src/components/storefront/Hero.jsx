@@ -10,7 +10,7 @@ import HeroSlideshow from "./HeroSlideshow";
  */
 export default function Hero() {
   return (
-    <section className="relative isolate flex min-h-[540px] items-center justify-center overflow-hidden border-b border-border sm:min-h-[600px] lg:min-h-[660px]">
+    <section className="relative isolate flex min-h-[540px] items-center justify-center overflow-hidden sm:min-h-[600px] lg:min-h-[660px]">
       {/* ---------------------------------------------------- background */}
       <HeroSlideshow />
 
@@ -23,6 +23,12 @@ export default function Hero() {
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-[linear-gradient(180deg,rgba(250,246,238,0.5)_0%,transparent_28%,transparent_70%,rgba(245,236,217,0.6)_100%)]"
+      />
+      {/* Fade the hero into the page background so it blends seamlessly
+          with the section below. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-background sm:h-40"
       />
 
       {/* ------------------------------------------------------- content */}

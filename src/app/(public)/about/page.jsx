@@ -43,7 +43,7 @@ export default function AboutPage() {
   return (
     <>
       {/* ------------------------------------------------------------ hero */}
-      <section className="relative isolate overflow-hidden border-b border-border">
+      <section className="relative isolate overflow-hidden">
         <Image
           src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=2000&q=80"
           alt=""
@@ -59,6 +59,10 @@ export default function AboutPage() {
         <div
           aria-hidden="true"
           className="absolute inset-0 bg-[linear-gradient(180deg,rgba(250,246,238,0.45)_0%,transparent_30%,transparent_72%,rgba(245,236,217,0.55)_100%)]"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-background sm:h-40"
         />
 
         <div className="relative mx-auto w-full max-w-7xl px-4 py-16 text-center sm:px-6 sm:py-24">
